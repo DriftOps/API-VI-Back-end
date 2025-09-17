@@ -60,6 +60,24 @@ public class User {
         inverseJoinColumns = @JoinColumn(name = "restriction_id")
     )
     private Set<DietaryRestriction> restrictions;
+  
+    private String goal;
+
+    private Integer height;       // em cm
+    private Double weight;        // em kg
+
+    private LocalDate birthDate;  // nova data de nascimento
+
+    @Column(updatable = false)
+    private LocalDate createdAt = LocalDate.now();  // data de cadastro
+
+    @Column(columnDefinition = "text[]")
+    private String[] restrictions;
+
+    private String activityLevel;
+
+    @Column(columnDefinition = "text[]")
+    private String[] dietaryPreferences;
 
     @Column(columnDefinition = "jsonb")
     private String chatHistory;
