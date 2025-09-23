@@ -10,8 +10,6 @@ import com.xertica.entity.enums.UserRole;
 import com.xertica.entity.enums.GoalType;
 import com.xertica.entity.enums.ActivityLevelType;
 
-@Setter
-@Getter
 @Entity
 @Table(name = "users")
 @Data

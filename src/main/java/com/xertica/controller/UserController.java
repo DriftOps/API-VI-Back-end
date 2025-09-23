@@ -1,9 +1,6 @@
 package com.xertica.controller;
 
-import com.xertica.dto.UserCreateDTO;
-import com.xertica.dto.UserDTO;
-import com.xertica.dto.UserLoginDTO;
-import com.xertica.dto.UserViewDTO;
+import com.xertica.dto.*;
 import com.xertica.entity.User;
 import com.xertica.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,25 +16,31 @@ public class UserController {
 
     private final UserService userService;
 
+    // Criar usuário direto (admin/geral)
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody UserDTO dto) {
         User user = userService.createUser(dto);
         return ResponseEntity.ok(user);
     }
 
+    // Listar todos usuários
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-        @PostMapping("/signup")
-    public UserViewDTO signup(@RequestBody UserCreateDTO dto) {
-        return userService.signup(dto);
+    // Signup (usuário se cadastra)
+    @PostMapping("/signup")
+    public ResponseEntity<UserViewDTO> signup(@RequestBody UserCreateDTO dto) {
+        UserViewDTO response = userService.signup(dto);
+        return ResponseEntity.ok(response);
     }
 
+    // Login (retorna JWT)
     @PostMapping("/login")
-    public UserViewDTO login(@RequestBody UserLoginDTO dto) {
-        return userService.login(dto);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
+        LoginResponseDTO response = userService.login(dto);
+        return ResponseEntity.ok(response);
     }
 }

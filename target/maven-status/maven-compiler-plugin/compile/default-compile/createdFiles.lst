@@ -11,7 +11,6 @@ com\xertica\dto\FaqCreateDTO.class
 com\xertica\dto\UserDTO$UserDTOBuilder.class
 com\xertica\entity\UserRestriction$UserRestrictionBuilder.class
 com\xertica\controller\UserController.class
-com\xertica\config\PrimaryDbConfig.class
 com\xertica\entity\UserPreference$UserPreferenceBuilder.class
 com\xertica\dto\FaqViewDTO.class
 com\xertica\entity\ChatSession.class
@@ -25,7 +24,6 @@ com\xertica\dto\UserDTO.class
 com\xertica\entity\User$UserBuilder.class
 com\xertica\entity\MealPlan.class
 com\xertica\entity\DietaryRestriction$DietaryRestrictionBuilder.class
-com\xertica\config\FaqDbConfig.class
 com\xertica\entity\DietaryPreference.class
 com\xertica\dto\UserCreateDTO.class
 com\xertica\dto\UserViewDTO.class

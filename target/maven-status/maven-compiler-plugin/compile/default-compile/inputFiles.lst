@@ -1,7 +1,5 @@
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\ApiViBackendApplication.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\FaqDataSourceProperties.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\FaqDbConfig.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\PrimaryDbConfig.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\FaqController.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\UserController.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\FaqCreateDTO.java

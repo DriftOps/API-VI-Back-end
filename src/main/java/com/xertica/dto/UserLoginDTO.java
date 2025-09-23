@@ -1,3 +1,11 @@
 package com.xertica.dto;
 
-public record UserLoginDTO(String username, String password) {}
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserLoginDTO {
+    private String email;
+    private String password;
+}

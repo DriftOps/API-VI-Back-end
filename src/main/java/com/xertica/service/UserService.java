@@ -73,7 +73,32 @@ public class UserService {
     }
 
     public UserViewDTO signup(UserCreateDTO dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'signup'");
-    }
+    // converter UserCreateDTO para UserDTO (pode ser direto se os campos forem iguais)
+    UserDTO userDto = new UserDTO(
+            dto.getName(),
+            dto.getEmail(),
+            dto.getPassword(), // aqui depois dá pra aplicar hash
+            dto.getRole(),
+            dto.getGoal(),
+            dto.getHeight(),
+            dto.getWeight(),
+            dto.getBirthDate(),
+            dto.getActivityLevel(),
+            dto.getPreferences(),
+            dto.getRestrictions(),
+            null, // chatHistory inicial
+            null  // plan inicial
+    );
+
+    User user = createUser(userDto);
+
+    // Retornar view DTO
+    return new UserViewDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole()
+    );
+}
+
 }
