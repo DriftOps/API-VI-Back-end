@@ -39,8 +39,8 @@ public class UserController {
 
     // Login (retorna JWT)
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
-        LoginResponseDTO response = userService.login(dto);
+    public ResponseEntity<UserViewDTO> login(@RequestBody UserLoginDTO dto) {
+        UserViewDTO response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
 }

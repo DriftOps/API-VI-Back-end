@@ -1,13 +1,16 @@
 com\xertica\repository\DietaryRestrictionRepository.class
+com\xertica\config\SecurityConfig.class
 com\xertica\config\FaqDataSourceProperties.class
 com\xertica\service\UserService.class
 com\xertica\entity\enums\UserRole.class
+com\xertica\security\JwtUtils.class
 com\xertica\repository\UserRepository.class
 com\xertica\repository\UserPreferenceRepository.class
 com\xertica\entity\Faq.class
 com\xertica\service\FaqService.class
 com\xertica\ApiViBackendApplication.class
 com\xertica\dto\FaqCreateDTO.class
+com\xertica\dto\UserCreateDTO$UserCreateDTOBuilder.class
 com\xertica\dto\UserDTO$UserDTOBuilder.class
 com\xertica\entity\UserRestriction$UserRestrictionBuilder.class
 com\xertica\controller\UserController.class
@@ -17,6 +20,7 @@ com\xertica\entity\ChatSession.class
 com\xertica\repository\FaqRepository.class
 com\xertica\entity\enums\ActivityLevelType.class
 com\xertica\entity\enums\GoalType.class
+com\xertica\dto\LoginResponseDTO.class
 com\xertica\entity\ChatMessage.class
 com\xertica\entity\DietaryRestriction.class
 com\xertica\entity\User.class
@@ -28,6 +32,7 @@ com\xertica\entity\DietaryPreference.class
 com\xertica\dto\UserCreateDTO.class
 com\xertica\dto\UserViewDTO.class
 com\xertica\entity\DietaryPreference$DietaryPreferenceBuilder.class
+com\xertica\entity\Faq$FaqBuilder.class
 com\xertica\repository\UserRestrictionRepository.class
 com\xertica\dto\UserLoginDTO.class
 com\xertica\entity\UserRestriction.class

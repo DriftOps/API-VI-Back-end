@@ -1,30 +1,33 @@
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\ApiViBackendApplication.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\FaqDataSourceProperties.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\FaqController.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\UserController.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\FaqCreateDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\FaqViewDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserCreateDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserLoginDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserViewDTO.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\ChatMessage.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\ChatSession.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\DietaryPreference.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\DietaryRestriction.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\enums\ActivityLevelType.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\enums\GoalType.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\enums\UserRole.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\Faq.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\MealPlan.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\User.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\UserPreference.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\UserRestriction.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryPreferenceRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryRestrictionRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\FaqRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserPreferenceRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserRestrictionRepository.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\service\FaqService.java
-C:\Github\API-VI-Back-end\src\main\java\com\xertica\service\UserService.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\ApiViBackendApplication.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\config\FaqDataSourceProperties.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\config\SecurityConfig.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\controller\FaqController.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\controller\UserController.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\FaqCreateDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\FaqViewDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\LoginResponseDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\UserCreateDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\UserDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\UserLoginDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\UserViewDTO.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\ChatMessage.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\ChatSession.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\DietaryPreference.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\DietaryRestriction.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\enums\ActivityLevelType.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\enums\GoalType.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\enums\UserRole.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\Faq.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\MealPlan.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\User.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\UserPreference.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\UserRestriction.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryPreferenceRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryRestrictionRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\FaqRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserPreferenceRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserRestrictionRepository.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\security\JwtUtils.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\FaqService.java
+C:\Users\Felipe Pereira\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\UserService.java
