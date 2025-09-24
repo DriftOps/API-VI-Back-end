@@ -1,6 +1,13 @@
 /*1. Tipo ENUM para papéis de usuário
 Assim você garante consistência e pode expandir futuramente.
 */
+GRANT CONNECT ON DATABASE postgres TO spring;
+GRANT USAGE ON SCHEMA public TO spring;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
+
+
 CREATE TYPE user_role AS ENUM (
     'admin', 
     'employee', 
@@ -174,3 +181,40 @@ INSERT INTO dietary_preferences (name) VALUES ('vegano')
 -- Vincular preferências ao usuário
 INSERT INTO user_preferences (user_id, preference_id)
 SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
+
+-- Primeiro insere o usuário
+INSERT INTO users (
+    name, email, password, goal, height, weight, birth_date,
+    activity_level
+) VALUES (
+    'admin',
+    'admin@nutrix.com',
+    'pass1234',
+    'IMPROVE_STRENGTH',
+    184,
+    83.5,
+    '1999-12-10',
+    'ACTIVE'
+)
+RETURNING id;
+
+
+-- Inserir restrições (se ainda não existirem)
+INSERT INTO dietary_restrictions (name) VALUES ('lactose')
+    ON CONFLICT (name) DO NOTHING;
+INSERT INTO dietary_restrictions (name) VALUES ('gluten')
+    ON CONFLICT (name) DO NOTHING;
+
+-- Vincular restrições ao usuário
+INSERT INTO user_restrictions (user_id, restriction_id)
+SELECT 2, id FROM dietary_restrictions WHERE name IN ('lactose', 'gluten');
+
+-- Inserir preferências (se ainda não existirem)
+INSERT INTO dietary_preferences (name) VALUES ('low-carb')
+    ON CONFLICT (name) DO NOTHING;
+INSERT INTO dietary_preferences (name) VALUES ('vegano')
+    ON CONFLICT (name) DO NOTHING;
+
+-- Vincular preferências ao usuário
+INSERT INTO user_preferences (user_id, preference_id)
+SELECT 2, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
