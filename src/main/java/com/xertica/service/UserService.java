@@ -28,7 +28,7 @@ public class UserService {
     // Criar usuário (admin/geral)
     @Transactional
     public UserViewDTO createUser(UserDTO dto) {
-         List<Object> chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : new ArrayList<>();
+        List<Object> chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : new ArrayList<>();
 
         User user = User.builder()
                 .name(dto.getName())
@@ -40,7 +40,7 @@ public class UserService {
                 .weight(dto.getWeight())
                 .birthDate(dto.getBirthDate())
                 .activityLevel(dto.getActivityLevel())
-                .chatHistory(dto.getChatHistory())
+                .chatHistory(chatHistory)
                 .plan(dto.getPlan())
                 .build();
 
@@ -97,8 +97,7 @@ public class UserService {
                 user.getName(),
                 user.getEmail(),
                 user.getRole(),
-                token
-        );
+                token);
     }
 
     // ===== Helpers =====
@@ -107,8 +106,7 @@ public class UserService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRole()
-        );
+                user.getRole());
     }
 
     private UserDTO dtoToUserDTO(UserCreateDTO dto) {
@@ -125,7 +123,6 @@ public class UserService {
                 dto.getPreferences(),
                 dto.getRestrictions(),
                 null,
-                null
-        );
+                null);
     }
 }
