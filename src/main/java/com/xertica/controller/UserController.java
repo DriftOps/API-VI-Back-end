@@ -1,7 +1,6 @@
 package com.xertica.controller;
 
 import com.xertica.dto.*;
-import com.xertica.entity.User;
 import com.xertica.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,31 +15,27 @@ public class UserController {
 
     private final UserService userService;
 
-    // Criar usuário direto (admin/geral)
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserDTO dto) {
-        User user = userService.createUser(dto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
+        UserViewDTO response = userService.createUser(dto);
+        return ResponseEntity.ok(response);
     }
 
-    // Listar todos usuários
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
+    public ResponseEntity<List<UserViewDTO>> getAllUsers() {
+        List<UserViewDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    // Signup (usuário se cadastra)
     @PostMapping("/signup")
     public ResponseEntity<UserViewDTO> signup(@RequestBody UserCreateDTO dto) {
         UserViewDTO response = userService.signup(dto);
         return ResponseEntity.ok(response);
     }
 
-    // Login (retorna JWT)
     @PostMapping("/login")
-    public ResponseEntity<UserViewDTO> login(@RequestBody UserLoginDTO dto) {
-        UserViewDTO response = userService.login(dto);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
+        LoginResponseDTO response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
 }

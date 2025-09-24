@@ -13,3 +13,5 @@ public class LoginResponseDTO {
     private UserRole role;
     private String token;
 }
+
+// usar no login (porque tem o token junto)

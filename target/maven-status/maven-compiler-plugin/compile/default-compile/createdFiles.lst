@@ -11,12 +11,14 @@ com\xertica\service\FaqService.class
 com\xertica\ApiViBackendApplication.class
 com\xertica\dto\FaqCreateDTO.class
 com\xertica\dto\UserCreateDTO$UserCreateDTOBuilder.class
+com\xertica\config\SecurityConfig$JwtAuthenticationFilter.class
 com\xertica\dto\UserDTO$UserDTOBuilder.class
 com\xertica\entity\UserRestriction$UserRestrictionBuilder.class
 com\xertica\controller\UserController.class
 com\xertica\entity\UserPreference$UserPreferenceBuilder.class
 com\xertica\dto\FaqViewDTO.class
 com\xertica\entity\ChatSession.class
+com\xertica\entity\JwtUtil.class
 com\xertica\repository\FaqRepository.class
 com\xertica\entity\enums\ActivityLevelType.class
 com\xertica\entity\enums\GoalType.class

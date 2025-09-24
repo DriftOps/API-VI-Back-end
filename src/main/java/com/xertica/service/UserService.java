@@ -1,17 +1,17 @@
 package com.xertica.service;
 
-import com.xertica.dto.UserCreateDTO;
-import com.xertica.dto.UserDTO;
-import com.xertica.dto.UserLoginDTO;
-import com.xertica.dto.UserViewDTO;
+import com.xertica.dto.*;
 import com.xertica.entity.*;
 import com.xertica.entity.enums.UserRole;
 import com.xertica.repository.*;
+import com.xertica.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,14 +22,15 @@ public class UserService {
     private final DietaryRestrictionRepository restrictionRepository;
     private final UserPreferenceRepository userPreferenceRepository;
     private final UserRestrictionRepository userRestrictionRepository;
+    private final PasswordEncoder passwordEncoder;
 
+    // Criar usuário (admin/geral)
     @Transactional
-    public User createUser(UserDTO dto) {
-        // 1. Cria usuário
+    public UserViewDTO createUser(UserDTO dto) {
         User user = User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                .password(dto.getPassword())
+                .password(passwordEncoder.encode(dto.getPassword()))
                 .role(dto.getRole() != null ? dto.getRole() : UserRole.CLIENT)
                 .goal(dto.getGoal())
                 .height(dto.getHeight())
@@ -42,7 +43,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        // 2. Vincular preferências
+        // Salva preferências
         if (dto.getPreferences() != null) {
             for (String prefName : dto.getPreferences()) {
                 DietaryPreference pref = preferenceRepository.findByName(prefName)
@@ -51,7 +52,7 @@ public class UserService {
             }
         }
 
-        // 3. Vincular restrições
+        // Salva restrições
         if (dto.getRestrictions() != null) {
             for (String resName : dto.getRestrictions()) {
                 DietaryRestriction res = restrictionRepository.findByName(resName)
@@ -60,45 +61,68 @@ public class UserService {
             }
         }
 
-        return user;
+        return toUserViewDTO(user);
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    // Listar todos usuários
+    public List<UserViewDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toUserViewDTO)
+                .collect(Collectors.toList());
     }
 
-    public UserViewDTO login(UserLoginDTO dto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'login'");
-    }
-
+    // Signup
+    @Transactional
     public UserViewDTO signup(UserCreateDTO dto) {
-    // converter UserCreateDTO para UserDTO (pode ser direto se os campos forem iguais)
-    UserDTO userDto = new UserDTO(
-            dto.getName(),
-            dto.getEmail(),
-            dto.getPassword(), // aqui depois dá pra aplicar hash
-            dto.getRole(),
-            dto.getGoal(),
-            dto.getHeight(),
-            dto.getWeight(),
-            dto.getBirthDate(),
-            dto.getActivityLevel(),
-            dto.getPreferences(),
-            dto.getRestrictions(),
-            null, // chatHistory inicial
-            null  // plan inicial
-    );
+        UserDTO userDto = dtoToUserDTO(dto);
+        return createUser(userDto);
+    }
 
-    User user = createUser(userDto);
+    // Login
+    public LoginResponseDTO login(UserLoginDTO dto) {
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuário ou senha inválidos"));
 
-    // Retornar view DTO
-    return new UserViewDTO(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getRole()
-    );
-}
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Usuário ou senha inválidos");
+        }
 
+        String token = JwtUtils.generateToken(user.getEmail(), user.getId());
+
+        return new LoginResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                token
+        );
+    }
+
+    // ===== Helpers =====
+    private UserViewDTO toUserViewDTO(User user) {
+        return new UserViewDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
+    }
+
+    private UserDTO dtoToUserDTO(UserCreateDTO dto) {
+        return new UserDTO(
+                dto.getName(),
+                dto.getEmail(),
+                dto.getPassword(),
+                dto.getRole(),
+                dto.getGoal(),
+                dto.getHeight(),
+                dto.getWeight(),
+                dto.getBirthDate(),
+                dto.getActivityLevel(),
+                dto.getPreferences(),
+                dto.getRestrictions(),
+                null,
+                null
+        );
+    }
 }

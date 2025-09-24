@@ -1,35 +1,44 @@
 /*1. Tipo ENUM para papéis de usuário
 Assim você garante consistência e pode expandir futuramente.
 */
-GRANT CONNECT ON DATABASE postgres TO spring;
-GRANT USAGE ON SCHEMA public TO spring;
+-- GRANT CONNECT ON DATABASE postgres TO spring;
+-- GRANT USAGE ON SCHEMA public TO spring;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
-GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
+-- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
 
 CREATE TYPE user_role AS ENUM (
-    'admin', 
-    'employee', 
-    'client', 
-    'nutritionist'
+    'CLIENT',
+    'EMPLOYEE',
+    'ADMIN',
+    'NUTRITIONIST'
 );
 
 -- 1. Criar o tipo ENUM para goal
 CREATE TYPE goal_type AS ENUM (
-    'emagrecer',
-    'ganhar_massa',
-    'manter_peso',
-    'reeducacao_alimentar',
-    'desempenho'
+    'LOSE_WEIGHT',
+    'LOSE_FAT',
+    'GAIN_WEIGHT',
+    'BUILD_MUSCLE',
+    'IMPROVE_ENDURANCE',
+    'IMPROVE_STRENGTH',
+    'MAINTAIN_WEIGHT' 
 );
+
+-- drop DATABASE NutriX;
+
+-- CREATE DATABASE NutriX;
+
+-- USE DATABASE NutriX;
 
 -- 2. Criar o tipo ENUM para activity_level
 CREATE TYPE activity_level_type AS ENUM (
-    'sedentario',
-    'moderado',
-    'ativo',
-    'atleta'
+    'SEDENTARY',     -- Quase sem exercício
+    'LIGHT',         -- Exercício leve diário
+    'MODERATE',      -- Exercício moderado médio
+    'ACTIVE',        -- Exercício frequente intenso
+    'VERY_ACTIVE' 
 );
 
 -- 3. Criar a tabela users
@@ -38,7 +47,7 @@ CREATE TABLE users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role user_role NOT NULL DEFAULT 'client',
+    role user_role NOT NULL DEFAULT 'CLIENT',
     gender VARCHAR(10),
     birth_date DATE,
     height INT,
@@ -144,11 +153,11 @@ INSERT INTO users (
     'Maria Silva',
     'maria.silva@example.com',
     '123456',
-    'emagrecer',
+    'LOSE_WEIGHT',
     165,
     70.5,
     '1997-09-20',
-    'moderado',
+    'MODERATE',
     '[
         {"pergunta": "Quero emagrecer rápido", "resposta": "Foque em déficit calórico saudável"}
     ]'::jsonb,
@@ -182,14 +191,15 @@ INSERT INTO dietary_preferences (name) VALUES ('vegano')
 INSERT INTO user_preferences (user_id, preference_id)
 SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
 
--- Primeiro insere o usuário
+-- ADMIN USER
 INSERT INTO users (
-    name, email, password, goal, height, weight, birth_date,
+    name, email, password, role, goal, height, weight, birth_date,
     activity_level
 ) VALUES (
     'admin',
     'admin@nutrix.com',
     'pass1234',
+    'ADMIN',
     'IMPROVE_STRENGTH',
     184,
     83.5,
