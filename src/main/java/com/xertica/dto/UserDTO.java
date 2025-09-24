@@ -24,6 +24,6 @@ public class UserDTO {
     private ActivityLevelType activityLevel;
     private List<String> preferences;
     private List<String> restrictions;
-    private String chatHistory;
+    private List<String> chatHistory;
     private String plan;
 }

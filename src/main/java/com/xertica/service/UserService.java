@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class UserService {
     // Criar usuário (admin/geral)
     @Transactional
     public UserViewDTO createUser(UserDTO dto) {
+         List<Object> chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : new ArrayList<>();
+
         User user = User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())

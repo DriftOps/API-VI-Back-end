@@ -4,6 +4,7 @@ import com.xertica.dto.*;
 import com.xertica.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
         UserViewDTO response = userService.createUser(dto);
         return ResponseEntity.ok(response);
