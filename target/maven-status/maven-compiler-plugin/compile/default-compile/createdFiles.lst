@@ -3,6 +3,7 @@ com\xertica\config\SecurityConfig.class
 com\xertica\config\FaqDataSourceProperties.class
 com\xertica\service\UserService.class
 com\xertica\entity\enums\UserRole.class
+com\xertica\config\MailConfig.class
 com\xertica\security\JwtUtils.class
 com\xertica\repository\UserRepository.class
 com\xertica\repository\UserPreferenceRepository.class
@@ -31,6 +32,7 @@ com\xertica\entity\User$UserBuilder.class
 com\xertica\entity\MealPlan.class
 com\xertica\entity\DietaryRestriction$DietaryRestrictionBuilder.class
 com\xertica\entity\DietaryPreference.class
+com\xertica\service\EmailService.class
 com\xertica\dto\UserCreateDTO.class
 com\xertica\dto\UserViewDTO.class
 com\xertica\entity\DietaryPreference$DietaryPreferenceBuilder.class

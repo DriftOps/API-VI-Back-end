@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.JdbcType;
+
 import com.xertica.entity.enums.UserRole;
 import com.xertica.entity.enums.GoalType;
 import com.xertica.entity.enums.ActivityLevelType;
@@ -41,6 +44,7 @@ public class User {
     private ActivityLevelType activityLevel;
 
     @Column(columnDefinition = "jsonb")
+    @org.hibernate.annotations.Type(JsonBinaryType.class)
     private String chatHistory;
 
     @Column(columnDefinition = "jsonb")
@@ -56,4 +60,8 @@ public class User {
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPreference> preferences = new ArrayList<>();
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean approved = false;
 }

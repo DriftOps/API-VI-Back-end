@@ -16,11 +16,11 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
-        UserViewDTO response = userService.createUser(dto);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Void> approveUser(@PathVariable Long id) {
+        userService.approveUser(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
@@ -30,13 +30,16 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserViewDTO> signup(@RequestBody UserCreateDTO dto) {
+    public ResponseEntity<UserViewDTO> signup(@RequestBody UserDTO dto) {
+        System.out.println("Recebendo requisição de signup para: " + dto.getEmail());
         UserViewDTO response = userService.signup(dto);
+        System.out.println("Signup concluído para: " + dto.getEmail());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
+        System.out.println("Recebendo requisição de login para: " + dto.getEmail());
         LoginResponseDTO response = userService.login(dto);
         return ResponseEntity.ok(response);
     }

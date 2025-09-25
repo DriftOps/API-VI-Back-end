@@ -7,6 +7,8 @@ Assim você garante consistência e pode expandir futuramente.
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 -- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
+ALTER TABLE users
+ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;
 
 CREATE TYPE user_role AS ENUM (
     'CLIENT',
@@ -61,8 +63,13 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
     chat_history JSONB,
-    plan JSONB
+    plan JSONB,
+    approved BOOLEAN DEFAULT FALSE NOT NULL
 );
+
+UPDATE users
+SET approved = true
+WHERE id IN (2);
 
 /*3. Preferências e restrições alimentares
 Separadas em tabelas auxiliares para normalização e reutilização.

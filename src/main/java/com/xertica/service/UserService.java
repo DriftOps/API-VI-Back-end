@@ -10,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,11 +23,12 @@ public class UserService {
     private final UserPreferenceRepository userPreferenceRepository;
     private final UserRestrictionRepository userRestrictionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     // Criar usuário (admin/geral)
     @Transactional
     public UserViewDTO createUser(UserDTO dto) {
-        List<Object> chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : new ArrayList<>();
+        String chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : "[]";
 
         User user = User.builder()
                 .name(dto.getName())
@@ -76,9 +76,28 @@ public class UserService {
 
     // Signup
     @Transactional
-    public UserViewDTO signup(UserCreateDTO dto) {
-        UserDTO userDto = dtoToUserDTO(dto);
-        return createUser(userDto);
+    public UserViewDTO signup(UserDTO dto) {
+        if (dto.getRole() == null) {
+            dto.setRole(UserRole.CLIENT);
+        }
+
+        User user = User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .role(dto.getRole())
+                .goal(dto.getGoal())
+                .height(dto.getHeight())
+                .weight(dto.getWeight())
+                .birthDate(dto.getBirthDate())
+                .activityLevel(dto.getActivityLevel())
+                .chatHistory(dto.getChatHistory())
+                .plan(dto.getPlan())
+                .approved(false) // 🔥 novo campo
+                .build();
+
+        userRepository.save(user);
+        return toUserViewDTO(user);
     }
 
     // Login
@@ -88,6 +107,9 @@ public class UserService {
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new RuntimeException("Usuário ou senha inválidos");
+        }
+        if (!user.getApproved()) {
+            throw new RuntimeException("Usuário ainda não aprovado pelo administrador.");
         }
 
         String token = JwtUtils.generateToken(user.getEmail(), user.getId());
@@ -109,20 +131,37 @@ public class UserService {
                 user.getRole());
     }
 
-    private UserDTO dtoToUserDTO(UserCreateDTO dto) {
-        return new UserDTO(
-                dto.getName(),
-                dto.getEmail(),
-                dto.getPassword(),
-                dto.getRole(),
-                dto.getGoal(),
-                dto.getHeight(),
-                dto.getWeight(),
-                dto.getBirthDate(),
-                dto.getActivityLevel(),
-                dto.getPreferences(),
-                dto.getRestrictions(),
-                null,
-                null);
+    // private UserDTO dtoToUserDTO(UserCreateDTO dto) {
+    //     return new UserDTO(
+    //             dto.getName(),
+    //             dto.getEmail(),
+    //             dto.getPassword(),
+    //             dto.getRole(),
+    //             dto.getGoal(),
+    //             dto.getHeight(),
+    //             dto.getWeight(),
+    //             dto.getBirthDate(),
+    //             dto.getActivityLevel(),
+    //             dto.getPreferences(),
+    //             dto.getRestrictions(),
+    //             null,
+    //             null);
+    // }
+
+    @Transactional
+    public void approveUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        user.setApproved(true);
+        userRepository.save(user);
+
+        // Envia e-mail
+        String subject = "Sua conta foi aprovada!";
+        String text = "Olá " + user.getName() + ",\n\n" +
+                "Sua conta no NutriX foi aprovada pelo administrador. Agora você pode acessar o sistema normalmente.\n\n"
+                +
+                "Atenciosamente,\nEquipe NutriX";
+
+        emailService.sendEmail(user.getEmail(), subject, text);
     }
 }

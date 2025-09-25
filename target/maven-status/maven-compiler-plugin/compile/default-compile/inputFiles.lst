@@ -1,5 +1,6 @@
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\ApiViBackendApplication.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\FaqDataSourceProperties.java
+C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\MailConfig.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\config\SecurityConfig.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\FaqController.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\controller\UserController.java
@@ -30,5 +31,6 @@ C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserPreferenceRep
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserRepository.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\repository\UserRestrictionRepository.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\security\JwtUtils.java
+C:\Github\API-VI-Back-end\src\main\java\com\xertica\service\EmailService.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\service\FaqService.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\service\UserService.java
