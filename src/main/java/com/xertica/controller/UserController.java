@@ -5,6 +5,8 @@ import com.xertica.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication; // ✅ CORRETO
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +17,25 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    // 🔥 ENDPOINT DE TESTE
+    @GetMapping("/test-auth")
+    public ResponseEntity<String> testAuth() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return ResponseEntity.ok("Autenticado como: " + authentication.getName() +
+                    " | Roles: " + authentication.getAuthorities());
+        } else {
+            return ResponseEntity.ok("Não autenticado");
+        }
+    }
+
+    // 🔥 ENDPOINT DE TESTE ADMIN
+    @GetMapping("/test-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> testAdmin() {
+        return ResponseEntity.ok("Acesso ADMIN permitido!");
+    }
 
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,5 +72,29 @@ public class UserController {
         System.out.println("Admin criando usuário: " + dto.getEmail());
         UserViewDTO response = userService.createUserAsAdmin(dto);
         return ResponseEntity.ok(response);
+    }
+
+    // Buscar usuário atual
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDTO> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        UserProfileDTO user = userService.getUserProfileByEmail(email);
+        return ResponseEntity.ok(user);
+    }
+
+    // Buscar usuário por ID (apenas ADMIN ou o próprio usuário)
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @userService.isSameUser(#id, authentication.name)")
+    public ResponseEntity<UserProfileDTO> getUserById(@PathVariable Long id) {
+        UserProfileDTO user = userService.getUserProfile(id);
+        return ResponseEntity.ok(user);
+    }
+
+    // Atualizar perfil do usuário
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileDTO> updateProfile(@RequestBody UserUpdateDTO dto, Authentication authentication) {
+        String email = authentication.getName();
+        UserProfileDTO updatedUser = userService.updateUserProfile(email, dto);
+        return ResponseEntity.ok(updatedUser);
     }
 }

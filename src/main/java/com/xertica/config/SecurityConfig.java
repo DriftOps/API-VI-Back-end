@@ -87,34 +87,66 @@ public class SecurityConfig {
                 HttpServletResponse response,
                 FilterChain filterChain) throws ServletException, IOException {
 
-            // Para rotas públicas, passa direto
             String path = request.getServletPath();
+            String method = request.getMethod();
+
+            System.out.println("=== FILTRO JWT - INÍCIO ===");
+            System.out.println("Request: " + method + " " + path);
+
+            // Rotas públicas - não requerem autenticação
             if (path.equals("/api/users/login") || path.equals("/api/users/signup")) {
+                System.out.println("Rota pública, passando direto...");
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // Para outras rotas, verifica o token
+            // Para rotas protegidas, verifica o token
             String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            System.out.println("Authorization header: " + authHeader);
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 try {
                     var claims = JwtUtils.validateToken(token).getBody();
                     String email = claims.getSubject();
+                    System.out.println("Token válido para email: " + email);
 
                     User user = userRepository.findByEmail(email).orElse(null);
                     if (user != null) {
-                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+                        System.out.println("Usuário encontrado no BD:");
+                        System.out.println("  - ID: " + user.getId());
+                        System.out.println("  - Nome: " + user.getName());
+                        System.out.println("  - Role: " + user.getRole());
+                        System.out.println("  - Aprovado: " + user.getApproved());
+
+                        var authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+                        var authorities = List.of(authority);
+                        System.out.println("  - Authority: " + authority.getAuthority());
+
                         var auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                         SecurityContextHolder.getContext().setAuthentication(auth);
+                        System.out.println("Autenticação configurada no SecurityContext");
+                    } else {
+                        System.out.println("❌ Usuário NÃO encontrado no BD para email: " + email);
                     }
                 } catch (Exception e) {
-                    // Token inválido - o Spring Security tratará como não autenticado
-                    System.out.println("Token inválido: " + e.getMessage());
+                    System.out.println("❌ Erro ao validar token: " + e.getMessage());
                 }
+            } else {
+                System.out.println("❌ Token não encontrado ou formato inválido");
             }
 
+            // Verifica o que ficou no SecurityContext
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                System.out.println("✅ SecurityContext contém autenticação:");
+                System.out.println("  - Principal: " + authentication.getPrincipal());
+                System.out.println("  - Authorities: " + authentication.getAuthorities());
+            } else {
+                System.out.println("❌ SecurityContext SEM autenticação");
+            }
+
+            System.out.println("=== FILTRO JWT - FIM ===");
             filterChain.doFilter(request, response);
         }
     }
