@@ -1,68 +1,100 @@
 package com.xertica.controller;
 
-import com.xertica.model.User;
+import com.xertica.dto.*;
 import com.xertica.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication; // ✅ CORRETO
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    // 🔥 ENDPOINT DE TESTE
+    @GetMapping("/test-auth")
+    public ResponseEntity<String> testAuth() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return ResponseEntity.ok("Autenticado como: " + authentication.getName() +
+                    " | Roles: " + authentication.getAuthorities());
+        } else {
+            return ResponseEntity.ok("Não autenticado");
+        }
+    }
+
+    // 🔥 ENDPOINT DE TESTE ADMIN
+    @GetMapping("/test-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> testAdmin() {
+        return ResponseEntity.ok("Acesso ADMIN permitido!");
+    }
+
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> approveUser(@PathVariable Long id) {
+        userService.approveUser(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<List<UserViewDTO>> getAllUsers() {
+        List<UserViewDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{id}")
-    public Optional<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    @PostMapping("/signup")
+    public ResponseEntity<UserViewDTO> signup(@RequestBody UserDTO dto) {
+        System.out.println("Recebendo requisição de signup para: " + dto.getEmail());
+        UserViewDTO response = userService.signup(dto);
+        System.out.println("Signup concluído para: " + dto.getEmail());
+        return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
+        System.out.println("Recebendo requisição de login para: " + dto.getEmail());
+        LoginResponseDTO response = userService.login(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    // Criar usuário como ADMIN (já aprovado)
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.saveUser(user);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
+        System.out.println("Admin criando usuário: " + dto.getEmail());
+        UserViewDTO response = userService.createUserAsAdmin(dto);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        user.setId(id);
-        return userService.saveUser(user);
+    // Buscar usuário atual
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDTO> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        UserProfileDTO user = userService.getUserProfileByEmail(email);
+        return ResponseEntity.ok(user);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-import com.xertica.repository.UserRepository;
+    // Buscar usuário por ID (apenas ADMIN ou o próprio usuário)
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @userService.isSameUser(#id, authentication.name)")
+    public ResponseEntity<UserProfileDTO> getUserById(@PathVariable Long id) {
+        UserProfileDTO user = userService.getUserProfile(id);
+        return ResponseEntity.ok(user);
+    }
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/usuarios")
-public class UserController {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserService userService;
-
-    // GET /usuarios/{id}/mensagem
-    @GetMapping("/{id}/mensagem")
-    public ResponseEntity<String> getMensagemPersonalizada(@PathVariable Long id) {
-        return userRepository.findById(id)
-                .map(user -> {
-                    String mensagem = userService.gerarMensagemPersonalizada(user);
-                    return ResponseEntity.ok(mensagem);
-                })
-                .orElse(ResponseEntity.notFound().build());
+    // Atualizar perfil do usuário
+    @PutMapping("/profile")
+    public ResponseEntity<UserProfileDTO> updateProfile(@RequestBody UserUpdateDTO dto, Authentication authentication) {
+        String email = authentication.getName();
+        UserProfileDTO updatedUser = userService.updateUserProfile(email, dto);
+        return ResponseEntity.ok(updatedUser);
     }
 }

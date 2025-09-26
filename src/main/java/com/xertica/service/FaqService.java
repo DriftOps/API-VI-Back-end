@@ -1,7 +1,8 @@
 package com.xertica.service;
 
 import com.xertica.dto.*;
-import com.xertica.model.Faq;
+import com.xertica.entity.Faq;
+import com.xertica.entity.User;
 import com.xertica.repository.FaqRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +18,22 @@ public class FaqService {
     }
 
     @Transactional
-    public FaqViewDTO create(FaqCreateDTO dto) {
+    public FaqViewDTO create(FaqCreateDTO dto, User user) {
         Faq f = new Faq();
         f.setQuestion(dto.question());
         f.setAnswer(dto.answer());
         f.setTags(dto.tags());
+        f.setUser(user); // associa o usuário logado
         f = repo.save(f);
         return new FaqViewDTO(f.getId(), f.getQuestion(), f.getAnswer(), f.getTags());
+    }
+
+    // usuário logado
+    @Transactional(readOnly = true)
+    public List<FaqViewDTO> getByUser(User user) {
+        return repo.findByUserId(user.getId()).stream()
+                .map(f -> new FaqViewDTO(f.getId(), f.getQuestion(), f.getAnswer(), f.getTags()))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -36,13 +46,13 @@ public class FaqService {
     public List<FaqViewDTO> search(String q, boolean fts) {
         if (fts) {
             return repo.searchFts(q).stream()
-                .map(r -> new FaqViewDTO(((Number) r[0]).longValue(),
-                                         (String) r[1], (String) r[2], (String) r[3]))
-                .toList();
+                    .map(r -> new FaqViewDTO(((Number) r[0]).longValue(),
+                            (String) r[1], (String) r[2], (String) r[3]))
+                    .toList();
         }
         return repo.searchLike(q).stream()
-            .map(f -> new FaqViewDTO(f.getId(), f.getQuestion(), f.getAnswer(), f.getTags()))
-            .toList();
+                .map(f -> new FaqViewDTO(f.getId(), f.getQuestion(), f.getAnswer(), f.getTags()))
+                .toList();
     }
 
     @Transactional

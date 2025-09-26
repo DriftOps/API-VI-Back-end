@@ -1,13 +1,15 @@
 package com.xertica.repository;
 
-import com.xertica.model.Faq;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
+
+import com.xertica.entity.Faq;
 
 import java.util.List;
 
 public interface FaqRepository extends JpaRepository<Faq, Long> {
 
+    List<Faq> findByUserId(Long userId);
     
     @Query("""
         SELECT f FROM Faq f
