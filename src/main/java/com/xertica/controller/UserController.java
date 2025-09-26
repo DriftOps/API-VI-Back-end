@@ -43,4 +43,13 @@ public class UserController {
         LoginResponseDTO response = userService.login(dto);
         return ResponseEntity.ok(response);
     }
+
+    // Criar usuário como ADMIN (já aprovado)
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
+        System.out.println("Admin criando usuário: " + dto.getEmail());
+        UserViewDTO response = userService.createUserAsAdmin(dto);
+        return ResponseEntity.ok(response);
+    }
 }

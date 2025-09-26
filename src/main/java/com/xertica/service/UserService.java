@@ -27,58 +27,15 @@ public class UserService {
 
     // Criar usuário (admin/geral)
     @Transactional
-    public UserViewDTO createUser(UserDTO dto) {
-        String chatHistory = dto.getChatHistory() != null ? dto.getChatHistory() : "[]";
-
-        User user = User.builder()
-                .name(dto.getName())
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .role(dto.getRole() != null ? dto.getRole() : UserRole.CLIENT)
-                .goal(dto.getGoal())
-                .height(dto.getHeight())
-                .weight(dto.getWeight())
-                .birthDate(dto.getBirthDate())
-                .activityLevel(dto.getActivityLevel())
-                .chatHistory(chatHistory)
-                .plan(dto.getPlan())
-                .build();
-
-        userRepository.save(user);
-
-        // Salva preferências
-        if (dto.getPreferences() != null) {
-            for (String prefName : dto.getPreferences()) {
-                DietaryPreference pref = preferenceRepository.findByName(prefName)
-                        .orElseGet(() -> preferenceRepository.save(new DietaryPreference(null, prefName)));
-                userPreferenceRepository.save(new UserPreference(user, pref));
-            }
-        }
-
-        // Salva restrições
-        if (dto.getRestrictions() != null) {
-            for (String resName : dto.getRestrictions()) {
-                DietaryRestriction res = restrictionRepository.findByName(resName)
-                        .orElseGet(() -> restrictionRepository.save(new DietaryRestriction(null, resName)));
-                userRestrictionRepository.save(new UserRestriction(user, res));
-            }
-        }
-
-        return toUserViewDTO(user);
-    }
-
-    // Listar todos usuários
-    public List<UserViewDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toUserViewDTO)
-                .collect(Collectors.toList());
-    }
-
-    // Signup
-    @Transactional
     public UserViewDTO signup(UserDTO dto) {
         if (dto.getRole() == null) {
             dto.setRole(UserRole.CLIENT);
+        }
+
+        // Garanta que chatHistory seja um JSON válido
+        String chatHistory = dto.getChatHistory();
+        if (chatHistory == null || chatHistory.trim().isEmpty()) {
+            chatHistory = "[]"; // JSON array vazio
         }
 
         User user = User.builder()
@@ -91,13 +48,20 @@ public class UserService {
                 .weight(dto.getWeight())
                 .birthDate(dto.getBirthDate())
                 .activityLevel(dto.getActivityLevel())
-                .chatHistory(dto.getChatHistory())
+                .chatHistory(chatHistory)
                 .plan(dto.getPlan())
-                .approved(false) // 🔥 novo campo
+                .approved(false)
                 .build();
 
         userRepository.save(user);
         return toUserViewDTO(user);
+    }
+
+    // Listar todos usuários
+    public List<UserViewDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toUserViewDTO)
+                .collect(Collectors.toList());
     }
 
     // Login
@@ -132,20 +96,20 @@ public class UserService {
     }
 
     // private UserDTO dtoToUserDTO(UserCreateDTO dto) {
-    //     return new UserDTO(
-    //             dto.getName(),
-    //             dto.getEmail(),
-    //             dto.getPassword(),
-    //             dto.getRole(),
-    //             dto.getGoal(),
-    //             dto.getHeight(),
-    //             dto.getWeight(),
-    //             dto.getBirthDate(),
-    //             dto.getActivityLevel(),
-    //             dto.getPreferences(),
-    //             dto.getRestrictions(),
-    //             null,
-    //             null);
+    // return new UserDTO(
+    // dto.getName(),
+    // dto.getEmail(),
+    // dto.getPassword(),
+    // dto.getRole(),
+    // dto.getGoal(),
+    // dto.getHeight(),
+    // dto.getWeight(),
+    // dto.getBirthDate(),
+    // dto.getActivityLevel(),
+    // dto.getPreferences(),
+    // dto.getRestrictions(),
+    // null,
+    // null);
     // }
 
     @Transactional
@@ -163,5 +127,37 @@ public class UserService {
                 "Atenciosamente,\nEquipe NutriX";
 
         emailService.sendEmail(user.getEmail(), subject, text);
+    }
+
+    //Criar usuário como ADMIN (já aprovado)
+    @Transactional
+    public UserViewDTO createUserAsAdmin(UserDTO dto) {
+        if (dto.getRole() == null) {
+            dto.setRole(UserRole.CLIENT);
+        }
+
+        // Garanta que chatHistory seja um JSON válido
+        String chatHistory = dto.getChatHistory();
+        if (chatHistory == null || chatHistory.trim().isEmpty()) {
+            chatHistory = "[]";
+        }
+
+        User user = User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .role(dto.getRole())
+                .goal(dto.getGoal())
+                .height(dto.getHeight())
+                .weight(dto.getWeight())
+                .birthDate(dto.getBirthDate())
+                .activityLevel(dto.getActivityLevel())
+                .chatHistory(chatHistory)
+                .plan(dto.getPlan())
+                .approved(true) // 🔥 DIFERENÇA: Já cria aprovado
+                .build();
+
+        userRepository.save(user);
+        return toUserViewDTO(user);
     }
 }

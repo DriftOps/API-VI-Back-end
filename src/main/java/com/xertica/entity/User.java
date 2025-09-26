@@ -1,17 +1,17 @@
 package com.xertica.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import com.xertica.entity.enums.UserRole;
+import com.xertica.entity.enums.GoalType;
+import com.xertica.entity.enums.ActivityLevelType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Type;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.hibernate.annotations.JdbcType;
-
-import com.xertica.entity.enums.UserRole;
-import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType;
 
 @Entity
 @Table(name = "users")
@@ -44,10 +44,11 @@ public class User {
     private ActivityLevelType activityLevel;
 
     @Column(columnDefinition = "jsonb")
-    @org.hibernate.annotations.Type(JsonBinaryType.class)
+    @Type(JsonBinaryType.class)
     private String chatHistory;
 
     @Column(columnDefinition = "jsonb")
+    @Type(JsonBinaryType.class)
     private String plan;
 
     @Builder.Default
