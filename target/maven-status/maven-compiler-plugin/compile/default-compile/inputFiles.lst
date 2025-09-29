@@ -10,6 +10,8 @@ C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\LoginResponseDTO.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserCreateDTO.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserDTO.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserLoginDTO.java
+C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserProfileDTO.java
+C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserUpdateDTO.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\dto\UserViewDTO.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\ChatMessage.java
 C:\Github\API-VI-Back-end\src\main\java\com\xertica\entity\ChatSession.java
