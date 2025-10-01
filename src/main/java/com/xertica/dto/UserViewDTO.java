@@ -11,6 +11,7 @@ public class UserViewDTO {
     private String name;
     private String email;
     private UserRole role;
+    private Boolean approved;
 }
 
 // usar em rotas que retornam apenas dados do user (perfil, lista de users, etc).

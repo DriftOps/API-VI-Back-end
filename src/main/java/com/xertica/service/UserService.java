@@ -108,7 +108,7 @@ public class UserService {
             throw new RuntimeException("Usuário ou senha inválidos");
         }
 
-        // 🔥 IMPORTANTE: Para ADMIN, não exigir aprovação
+        // Para ADMIN, não exigir aprovação
         if (!user.getApproved() && user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("Usuário ainda não aprovado pelo administrador.");
         }
@@ -146,28 +146,28 @@ public class UserService {
         }
     }
 
-    // 🔥 NOVO: Buscar usuário por email (apenas dados básicos)
+    // Buscar usuário por email (apenas dados básicos)
     public UserViewDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return toUserViewDTO(user);
     }
 
-    // 🔥 NOVO: Buscar perfil completo do usuário por email
+    // Buscar perfil completo do usuário por email
     public UserProfileDTO getUserProfileByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return toUserProfileDTO(user);
     }
 
-    // 🔥 NOVO: Buscar perfil completo do usuário por ID
+    // Buscar perfil completo do usuário por ID
     public UserProfileDTO getUserProfile(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         return toUserProfileDTO(user);
     }
 
-    // 🔥 CORRIGIDO: Atualizar perfil do usuário (chaves fechadas corretamente)
+    // Atualizar perfil do usuário (chaves fechadas corretamente)
     @Transactional
     public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
         User user = userRepository.findByEmail(email)
@@ -242,11 +242,13 @@ public class UserService {
 
     // Converter User para UserViewDTO (dados básicos)
     private UserViewDTO toUserViewDTO(User user) {
-        return new UserViewDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getRole());
+    return new UserViewDTO(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole(),
+            user.getApproved()
+    );
     }
 
     // Converter User para UserProfileDTO (dados completos)
