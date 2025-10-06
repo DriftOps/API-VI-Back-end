@@ -1,17 +1,28 @@
-version: '3.8'
+version: "3.9"
 services:
-  postgres:
-    image: postgres:15
-    container_name: nutrition_postgres
+  db:
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: nutrition_db
+      POSTGRES_DB: NutriX
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
-volumes:
-  postgres_data:
+  backend:
+    build: ./backend
+    container_name: spring-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/NutriX
+      # SPRING_DATASOURCE_URL: postgresql://user:senha@ep-meu-banco.neon.tech:5432/NutriX
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
