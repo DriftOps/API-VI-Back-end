@@ -4,6 +4,7 @@ C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\confi
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\config\SecurityConfig.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\controller\FaqController.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\controller\UserController.java
+C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\controller\UserPipelineController.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\FaqCreateDTO.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\FaqViewDTO.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\dto\LoginResponseDTO.java
@@ -24,15 +25,18 @@ C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entit
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\JwtUtil.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\MealPlan.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\User.java
+C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\UserPipeline.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\UserPreference.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\entity\UserRestriction.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryPreferenceRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\DietaryRestrictionRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\FaqRepository.java
+C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserPipelineRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserPreferenceRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\repository\UserRestrictionRepository.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\security\JwtUtils.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\EmailService.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\FaqService.java
+C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\UserPipelineService.java
 C:\Users\Diurno\Documents\GitHub\API-VI-Back-end\src\main\java\com\xertica\service\UserService.java

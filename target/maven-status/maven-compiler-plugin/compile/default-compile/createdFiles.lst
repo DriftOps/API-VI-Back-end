@@ -1,6 +1,8 @@
+com\xertica\service\UserPipelineService.class
 com\xertica\service\UserService.class
 com\xertica\entity\enums\UserRole.class
 com\xertica\security\JwtUtils.class
+com\xertica\entity\UserPipeline.class
 com\xertica\dto\UserProfileDTO.class
 com\xertica\entity\Faq.class
 com\xertica\ApiViBackendApplication.class
@@ -13,11 +15,13 @@ com\xertica\entity\JwtUtil.class
 com\xertica\entity\enums\ActivityLevelType.class
 com\xertica\entity\enums\GoalType.class
 com\xertica\dto\LoginResponseDTO.class
+com\xertica\controller\UserPipelineController.class
 com\xertica\entity\User.class
 com\xertica\dto\UserDTO.class
 com\xertica\entity\User$UserBuilder.class
 com\xertica\dto\UserCreateDTO.class
 com\xertica\dto\UserViewDTO.class
+com\xertica\repository\UserPipelineRepository.class
 com\xertica\dto\UserLoginDTO.class
 com\xertica\entity\UserRestriction.class
 com\xertica\repository\DietaryPreferenceRepository.class

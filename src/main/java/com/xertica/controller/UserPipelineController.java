@@ -1,14 +1,14 @@
-package com.nutrix.controller;
+package com.xertica.controller;
 
-import com.nutrix.model.User;
-import com.nutrix.model.UserPipeline;
-import com.nutrix.service.UserPipelineService;
+import com.xertica.entity.User;
+import com.xertica.entity.UserPipeline;
+import com.xertica.service.UserPipelineService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pipeline")
+@RequestMapping("api/pipeline")
 public class UserPipelineController {
 
     private final UserPipelineService service;

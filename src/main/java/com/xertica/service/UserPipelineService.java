@@ -1,8 +1,8 @@
-package com.nutrix.service;
+package com.xertica.service;
 
-import com.nutrix.model.User;
-import com.nutrix.model.UserPipeline;
-import com.nutrix.repository.UserPipelineRepository;
+import com.xertica.entity.User;
+import com.xertica.entity.UserPipeline;
+import com.xertica.repository.UserPipelineRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

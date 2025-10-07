@@ -1,7 +1,7 @@
-package com.nutrix.repository;
+package com.xertica.repository;
 
-import com.nutrix.model.User;
-import com.nutrix.model.UserPipeline;
+import com.xertica.entity.User;
+import com.xertica.entity.UserPipeline;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

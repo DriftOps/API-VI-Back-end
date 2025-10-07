@@ -1,4 +1,4 @@
-package com.nutrix.model;
+package com.xertica.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
