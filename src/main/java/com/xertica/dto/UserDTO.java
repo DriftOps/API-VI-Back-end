@@ -2,7 +2,7 @@ package com.xertica.dto;
 
 import com.xertica.entity.enums.UserRole;
 import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType;
+import com.xertica.entity.enums.ActivityType;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ public class UserDTO {
     private Integer height;
     private Double weight;
     private LocalDate birthDate;
-    private ActivityLevelType activityLevel;
+    private ActivityType activityLevel;
     private List<String> preferences;
     private List<String> restrictions;
     private String chatHistory;

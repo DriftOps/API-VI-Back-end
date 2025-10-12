@@ -3,7 +3,7 @@ package com.xertica.entity;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import com.xertica.entity.enums.UserRole;
 import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType;
+import com.xertica.entity.enums.ActivityType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Type;
@@ -41,7 +41,7 @@ public class User {
     private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)
-    private ActivityLevelType activityLevel;
+    private ActivityType activityLevel;
 
     @Column(columnDefinition = "jsonb")
     @Type(JsonBinaryType.class)

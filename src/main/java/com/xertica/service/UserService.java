@@ -3,7 +3,7 @@ package com.xertica.service;
 import com.xertica.dto.*;
 import com.xertica.entity.*;
 import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType; // ✅ IMPORTAR ActivityLevelType
+import com.xertica.entity.enums.ActivityType; // ✅ IMPORTAR ActivityLevelType
 import com.xertica.entity.enums.UserRole;
 import com.xertica.repository.*;
 import com.xertica.security.JwtUtils;
@@ -193,7 +193,7 @@ public class UserService {
         // Converter String para Enum
         if (dto.getActivityLevel() != null) {
             try {
-                user.setActivityLevel(ActivityLevelType.valueOf(dto.getActivityLevel()));
+                user.setActivityLevel(ActivityType.valueOf(dto.getActivityLevel()));
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException("Valor de nível de atividade inválido: " + dto.getActivityLevel());
             }

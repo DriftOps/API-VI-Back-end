@@ -67,6 +67,34 @@ CREATE TABLE users (
     approved BOOLEAN DEFAULT FALSE NOT NULL
 );
 
+CREATE TABLE anamneses (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+
+    main_reason VARCHAR(50) NOT NULL, -- Enum (EMAGRECIMENTO, GANHO_MASSA, etc)
+
+    conditions TEXT[],                -- array com as condições selecionadas
+    allergies TEXT[],                 -- idem
+    surgeries TEXT[],                 -- idem
+
+    activity_type VARCHAR(50),        -- Enum (SEDENTARIO, CAMINHADA, etc)
+    activity_frequency VARCHAR(50),   -- Enum (NENHUMA, 1_2X, 3_4X, 5X)
+    activity_minutes VARCHAR(50),     -- Enum (0, 30, 60, 90)
+
+    sleep_quality VARCHAR(20),        -- Enum (BOA, REGULAR, RUIM)
+    night_awakenings VARCHAR(20),     -- Enum (NAO, 1X, +1X)
+
+    evacuation_frequency VARCHAR(20), -- Enum (DIARIA, 5X, 3X, 1X)
+    stress_level VARCHAR(20),         -- Enum (BAIXO, MODERADO, ALTO)
+    alcohol_consumption VARCHAR(30),  -- Enum (NAO, SOCIAL, FREQUENTE, DIARIO)
+    smoking BOOLEAN,
+    hydration_level VARCHAR(30),      -- Enum (MENOS_1L, ENTRE_1_2L, MAIS_2L)
+    medication_use BOOLEAN,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 UPDATE users
 SET approved = true
 WHERE id IN (2);
