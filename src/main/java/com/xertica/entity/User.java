@@ -65,4 +65,8 @@ public class User {
     @Column(nullable = false)
     @Builder.Default
     private Boolean approved = false;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserAnamnesis anamnesis;
+
 }
