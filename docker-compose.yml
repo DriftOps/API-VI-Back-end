@@ -1,37 +1,17 @@
+version: '3.8'
 services:
-  db:
-    image: postgres:16
-    container_name: db
+  postgres:
+    image: postgres:15
+    container_name: nutrition_postgres
     restart: always
     environment:
-      POSTGRES_DB: nutrixdb
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nutrition_db
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - backend-net
-
-  backend:
-    build: .
-    container_name: backend
-    depends_on:
-      - db
-    environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-    ports:
-      - "8080:8080"
-    networks:
-      - backend-net
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  pgdata:
-
-networks:
-  backend-net:
-    driver: bridge
+  postgres_data:
