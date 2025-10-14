@@ -13,11 +13,10 @@ public class UserProfileDTO {
     private String name;
     private String email;
     private String role;
-    private String goal;
+    private String goal; // ✅ Este campo agora virá da Anamnese
     private Double weight;
     private Integer height;
     private String birthDate;
-    private String activityLevel;
     private List<String> dietaryPreferences;
     private List<String> restrictions;
     private String plan;

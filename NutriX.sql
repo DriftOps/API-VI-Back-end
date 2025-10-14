@@ -7,8 +7,18 @@ Assim você garante consistência e pode expandir futuramente.
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 -- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
+SELECT * FROM users;
+SELECT * FROM user_anamnesis;
+
+-- DELETE from user_anamnesis where id=1;
+-- DELETE from users where id=1;
+
+
 ALTER TABLE users
 ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;
+
+ALTER TABLE users
+DROP COLUMN activity_level;
 
 CREATE TYPE user_role AS ENUM (
     'CLIENT',
@@ -54,8 +64,6 @@ CREATE TABLE users (
     birth_date DATE,
     height INT,
     weight NUMERIC(5,2),
-    goal goal_type,
-    activity_level activity_level_type,
     timezone VARCHAR(50),
     language VARCHAR(10) DEFAULT 'pt',
     onboarding_completed BOOLEAN DEFAULT FALSE,
@@ -154,17 +162,15 @@ CREATE TABLE user_activity_logs (
 
 -- Primeiro insere o usuário
 INSERT INTO users (
-    name, email, password, goal, height, weight, birth_date,
-    activity_level, chat_history, plan
+    name, email, password, height, weight, birth_date,
+    chat_history, plan
 ) VALUES (
     'Maria Silva',
     'maria.silva@example.com',
     '123456',
-    'LOSE_WEIGHT',
     165,
     70.5,
     '1997-09-20',
-    'MODERATE',
     '[
         {"pergunta": "Quero emagrecer rápido", "resposta": "Foque em déficit calórico saudável"}
     ]'::jsonb,
@@ -200,8 +206,7 @@ SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
 
 -- ADMIN USER
 INSERT INTO users (
-    name, email, password, role, goal, height, weight, birth_date,
-    activity_level
+    name, email, password, role, height, weight, birth_date
 ) VALUES (
     'admin',
     'admin@nutrix.com',
@@ -235,3 +240,144 @@ INSERT INTO dietary_preferences (name) VALUES ('vegano')
 -- Vincular preferências ao usuário
 INSERT INTO user_preferences (user_id, preference_id)
 SELECT 2, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
+
+-- Tipos ENUM para as respostas
+
+-- Main goal type (Objetivo principal)
+CREATE TYPE main_goal_type AS ENUM (
+    'WEIGHT_LOSS',              -- EMAGRECIMENTO
+    'MUSCLE_GAIN',              -- GANHO_MASSA_MUSCULAR
+    'DIABETES_CONTROL',         -- CONTROLE_DIABETES
+    'DIET_REEDUCATION',         -- REEDUCACAO_ALIMENTAR
+    'PHYSICAL_MENTAL_PERFORMANCE' -- PERFORMANCE_FISICA_MENTAL
+);
+
+-- Activity type (Tipo de atividade)
+CREATE TYPE activity_type_enum AS ENUM (
+    'SEDENTARY',    -- SEDENTARIO
+    'WALKING',      -- CAMINHADA
+    'WEIGHT_TRAINING', -- MUSCULACAO
+    'RUNNING',      -- CORRIDA
+    'CROSSFIT',     -- CROSSFIT
+    'SWIMMING',     -- NATACAO
+    'FIGHT',        -- LUTA
+    'OTHER'         -- OUTRO
+);
+
+-- Frequency type (Frequência)
+CREATE TYPE frequency_type AS ENUM (
+    'NONE',          -- NENHUMA
+    'ONE_2X_WEEK',   -- 1_2X_SEMANA
+    'THREE_4X_WEEK', -- 3_4X_SEMANA
+    'FIVE_X_OR_MORE' -- 5X_OU_MAIS
+);
+
+-- Sleep quality type (Qualidade do sono)
+CREATE TYPE sleep_quality_type AS ENUM (
+    'GOOD',         -- BOA
+    'REGULAR',      -- REGULAR
+    'BAD'           -- RUIM
+);
+
+-- Wakes during night type (Acorda durante a noite)
+CREATE TYPE wakes_during_night_type AS ENUM (
+    'NO',           -- NAO
+    'ONCE',         -- 1X
+    'MORE_THAN_ONCE'-- MAIS_DE_1X
+);
+
+-- Bowel frequency type (Frequência intestinal)
+CREATE TYPE bowel_frequency_type AS ENUM (
+    'EVERY_DAY',        -- TODO_DIA
+    'FIVE_X_WEEK',      -- 5X_SEMANA
+    'THREE_X_WEEK',     -- 3X_SEMANA
+    'ONE_X_WEEK'        -- 1X_SEMANA
+);
+
+-- Stress level type (Nível de estresse)
+CREATE TYPE stress_level_type AS ENUM (
+    'LOW',          -- BAIXO
+    'MODERATE',     -- MODERADO
+    'HIGH'          -- ALTO
+);
+
+-- Alcohol use type (Uso de álcool)
+CREATE TYPE alcohol_use_type AS ENUM (
+    'DOES_NOT_CONSUME',      -- NAO_CONSOME
+    'SOCIAL_1_2X_WEEK',      -- SOCIAL_1_2X_SEMANA
+    'FREQUENT_3_4X_WEEK',    -- FREQUENTE_3_4X_SEMANA
+    'DAILY_USE'              -- USO_DIARIO
+);
+
+-- Hydration level type (Nível de hidratação)
+CREATE TYPE hydration_level_type AS ENUM (
+    'LESS_THAN_1L',          -- MENOS_1L
+    'BETWEEN_1_2L',          -- ENTRE_1_2L
+    'BETWEEN_2_3L',          -- ENTRE_2_3L
+    'MORE_THAN_3L'           -- MAIS_3L
+);
+
+-- Tabela principal
+CREATE TABLE user_anamnesis (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+
+    main_goal main_goal_type NOT NULL,            -- Objetivo principal
+    medical_conditions TEXT,                      -- Condições médicas
+    allergies TEXT,                               -- Alergias
+    surgeries TEXT,                               -- Cirurgias
+
+    activity_type activity_type_enum,             -- Tipo de atividade
+    frequency frequency_type,                     -- Frequência semanal
+    activity_minutes_per_day INT,                 -- Minutos de atividade por dia
+
+    sleep_quality sleep_quality_type,             -- Qualidade do sono
+    wakes_during_night wakes_during_night_type,   -- Acorda durante a noite
+
+    bowel_frequency bowel_frequency_type,         -- Frequência intestinal
+    stress_level stress_level_type,               -- Nível de estresse
+    alcohol_use alcohol_use_type,                 -- Consumo de álcool
+    smoking BOOLEAN DEFAULT FALSE,                -- Fumante
+    hydration_level hydration_level_type,         -- Nível de hidratação
+    continuous_medication BOOLEAN DEFAULT FALSE,  -- Uso de medicação contínua
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO user_anamnesis (
+    user_id,
+    main_goal,
+    medical_conditions,
+    allergies,
+    surgeries,
+    activity_type,
+    frequency,
+    activity_minutes_per_day,
+    sleep_quality,
+    wakes_during_night,
+    bowel_frequency,
+    stress_level,
+    alcohol_use,
+    smoking,
+    hydration_level,
+    continuous_medication
+) VALUES (
+    2,  -- id do usuário na tabela users
+    'WEIGHT_LOSS',            -- Emagrecimento
+    'Hypertension; Gastritis',-- Condições médicas
+    'Lactose intolerance',    -- Alergias
+    'Cesarean',               -- Cirurgias
+    'WEIGHT_TRAINING',        -- Tipo de atividade
+    '3_4X_WEEK',              -- Frequência semanal
+    60,                       -- Minutos de atividade por dia
+    'REGULAR',                -- Qualidade do sono
+    'ONCE',                   -- Acorda durante a noite
+    'EVERY_DAY',              -- Frequência intestinal
+    'MODERATE',               -- Nível de estresse
+    'SOCIAL_1_2X_WEEK',       -- Consumo de álcool
+    FALSE,                    -- Fumante
+    'BETWEEN_2_3L',           -- Nível de hidratação
+    TRUE                      -- Uso de medicação contínua
+)
+RETURNING *;
+
