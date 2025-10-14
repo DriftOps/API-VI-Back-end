@@ -7,7 +7,12 @@ Assim você garante consistência e pode expandir futuramente.
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 -- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
--- SELECT * FROM users;
+SELECT * FROM users;
+SELECT * FROM user_anamnesis;
+
+-- DELETE from user_anamnesis where id=1;
+-- DELETE from users where id=1;
+
 
 ALTER TABLE users
 ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;

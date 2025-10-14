@@ -1,13 +1,14 @@
 package com.xertica.dto;
 
 import com.xertica.entity.enums.UserRole;
-import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
+/**
+ * DTO simplificado para o processo de signup e criação de usuário.
+ * Contém apenas os dados essenciais da conta.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,14 +17,9 @@ public class UserDTO {
     private String name;
     private String email;
     private String password;
-    private UserRole role;
-    private GoalType goal;
+    private UserRole role; // Usado principalmente para criação via admin
     private Integer height;
     private Double weight;
     private LocalDate birthDate;
-    private ActivityLevelType activityLevel;
-    private List<String> preferences;
-    private List<String> restrictions;
-    private String chatHistory;
-    private String plan;
+    private String gender;
 }
