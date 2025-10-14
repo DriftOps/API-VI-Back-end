@@ -7,8 +7,13 @@ Assim você garante consistência e pode expandir futuramente.
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 -- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
+-- SELECT * FROM users;
+
 ALTER TABLE users
 ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;
+
+ALTER TABLE users
+DROP COLUMN activity_level;
 
 CREATE TYPE user_role AS ENUM (
     'CLIENT',
@@ -54,8 +59,6 @@ CREATE TABLE users (
     birth_date DATE,
     height INT,
     weight NUMERIC(5,2),
-    goal goal_type,
-    activity_level activity_level_type,
     timezone VARCHAR(50),
     language VARCHAR(10) DEFAULT 'pt',
     onboarding_completed BOOLEAN DEFAULT FALSE,
@@ -154,17 +157,15 @@ CREATE TABLE user_activity_logs (
 
 -- Primeiro insere o usuário
 INSERT INTO users (
-    name, email, password, goal, height, weight, birth_date,
-    activity_level, chat_history, plan
+    name, email, password, height, weight, birth_date,
+    chat_history, plan
 ) VALUES (
     'Maria Silva',
     'maria.silva@example.com',
     '123456',
-    'LOSE_WEIGHT',
     165,
     70.5,
     '1997-09-20',
-    'MODERATE',
     '[
         {"pergunta": "Quero emagrecer rápido", "resposta": "Foque em déficit calórico saudável"}
     ]'::jsonb,
@@ -200,8 +201,7 @@ SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
 
 -- ADMIN USER
 INSERT INTO users (
-    name, email, password, role, goal, height, weight, birth_date,
-    activity_level
+    name, email, password, role, height, weight, birth_date
 ) VALUES (
     'admin',
     'admin@nutrix.com',
@@ -375,3 +375,4 @@ INSERT INTO user_anamnesis (
     TRUE                      -- Uso de medicação contínua
 )
 RETURNING *;
+
