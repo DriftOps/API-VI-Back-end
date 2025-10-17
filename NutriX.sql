@@ -10,9 +10,10 @@ Assim você garante consistência e pode expandir futuramente.
 SELECT * FROM users;
 SELECT * FROM user_anamnesis;
 
--- DELETE from user_anamnesis where id=1;
--- DELETE from users where id=1;
+--DELETE from user_anamnesis where id=3;
+-- DELETE from users where id=29;
 
+-- ALTER TABLE user_anamnesis ALTER COLUMN main_goal DROP NOT NULL;
 
 ALTER TABLE users
 ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;

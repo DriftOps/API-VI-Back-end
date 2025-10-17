@@ -1,5 +1,6 @@
 package com.xertica.dto;
 
+import com.xertica.entity.enums.anamnesis.*; // Importar todos os enums
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,12 +14,27 @@ public class UserProfileDTO {
     private String name;
     private String email;
     private String role;
-    private String goal; // ✅ Este campo agora virá da Anamnese
     private Double weight;
     private Integer height;
     private String birthDate;
     private List<String> dietaryPreferences;
     private List<String> restrictions;
-    private String plan;
     private Boolean approved;
+    
+    // --- Campos da Anamnese ---
+    private String goal; // Já existia
+    private ActivityTypeEnum activityLevel; // Já existia
+    private String medicalConditions;
+    private String allergies;
+    private String surgeries;
+    private FrequencyType frequency;
+    private Integer activityMinutesPerDay;
+    private SleepQualityType sleepQuality;
+    private WakesDuringNightType wakesDuringNight;
+    private BowelFrequencyType bowelFrequency;
+    private AlcoholUseType alcoholUse;
+    private Boolean smoking;
+    private HydrationLevelType hydrationLevel;
+    private Boolean continuousMedication;
+    // O campo 'plan' foi removido
 }

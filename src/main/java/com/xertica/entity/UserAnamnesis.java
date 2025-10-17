@@ -31,7 +31,7 @@ public class UserAnamnesis {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column
     private MainGoalType mainGoal;
 
     @Column(columnDefinition = "TEXT")
