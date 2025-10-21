@@ -4,6 +4,9 @@ import com.xertica.dto.*;
 import com.xertica.entity.*;
 import com.xertica.entity.enums.UserRole;
 import com.xertica.entity.enums.anamnesis.ActivityTypeEnum;
+import org.hibernate.Hibernate;
+import java.time.LocalDate;
+import java.time.Period;
 import com.xertica.mapper.UserMapper;
 import com.xertica.repository.*;
 import com.xertica.security.JwtUtils;
@@ -16,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.xertica.dto.context.AIContextDTO;
+import com.xertica.dto.context.AnamnesisContextDTO;
+import com.xertica.dto.context.UserContextDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -223,4 +229,57 @@ public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
                 user.getApproved()
         );
     }
+
+    @Transactional(readOnly = true)
+        public User findUserByEmail(String email) {
+            return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
+}
+
+@Transactional(readOnly = true)
+public AIContextDTO getUserContextForAI(String email) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
+
+    UserAnamnesis anamnesis = user.getAnamnesis();
+
+    // Mapeia os dados do usuário para o DTO - FORMA CORRIGIDA
+    UserContextDTO userDTO = new UserContextDTO();
+    userDTO.setName(user.getName());
+    userDTO.setWeight(user.getWeight());
+    
+    // Converte a altura para Double, caso seja Integer na entidade
+    if (user.getHeight() != null) {
+        userDTO.setHeight(user.getHeight().doubleValue());
+    }
+    if (user.getBirthDate() != null) {
+        userDTO.setAge(Period.between(user.getBirthDate(), LocalDate.now()).getYears());
+    }
+    if (user.getGender() != null) {
+        userDTO.setGender(user.getGender()); // Gênero PODE ser um Enum, então mantemos .name() aqui.
+    }
+
+    // Mapeia os dados da anamnese para o DTO (já estava correto)
+    AnamnesisContextDTO anamnesisDTO = new AnamnesisContextDTO();
+    if (anamnesis != null) {
+        anamnesisDTO.setMainGoal(anamnesis.getMainGoal() != null ? anamnesis.getMainGoal().name() : "N/A");
+        anamnesisDTO.setMedicalConditions(anamnesis.getMedicalConditions());
+        anamnesisDTO.setAllergies(anamnesis.getAllergies());
+        anamnesisDTO.setSurgeries(anamnesis.getSurgeries());
+        anamnesisDTO.setActivityType(anamnesis.getActivityType() != null ? anamnesis.getActivityType().name() : "N/A");
+        anamnesisDTO.setFrequency(anamnesis.getFrequency() != null ? anamnesis.getFrequency().name() : "N/A");
+        anamnesisDTO.setActivityMinutesPerDay(anamnesis.getActivityMinutesPerDay());
+        anamnesisDTO.setSleepQuality(anamnesis.getSleepQuality() != null ? anamnesis.getSleepQuality().name() : "N/A");
+        anamnesisDTO.setWakesDuringNight(anamnesis.getWakesDuringNight() != null ? anamnesis.getWakesDuringNight().name() : "N/A");
+        anamnesisDTO.setBowelFrequency(anamnesis.getBowelFrequency() != null ? anamnesis.getBowelFrequency().name() : "N/A");
+        anamnesisDTO.setStressLevel(anamnesis.getStressLevel() != null ? anamnesis.getStressLevel().name() : "N/A");
+        anamnesisDTO.setAlcoholUse(anamnesis.getAlcoholUse() != null ? anamnesis.getAlcoholUse().name() : "N/A");
+        anamnesisDTO.setSmoking(anamnesis.getSmoking());
+        anamnesisDTO.setHydrationLevel(anamnesis.getHydrationLevel() != null ? anamnesis.getHydrationLevel().name() : "N/A");
+        anamnesisDTO.setContinuousMedication(anamnesis.getContinuousMedication());
+    }
+
+    return new AIContextDTO(userDTO, anamnesisDTO);
+}
+
 }
