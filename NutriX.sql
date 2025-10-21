@@ -382,7 +382,26 @@ INSERT INTO user_anamnesis (
 )
 RETURNING *;
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-UPDATE users SET password = crypt(password,gen_salt('bf'));
+-- UPDATE users SET password = crypt(password,gen_salt('bf'));
 
+
+/* 8. Histórico de mensagens da IA (memória de chat) */
+CREATE TABLE chat_history (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    sender VARCHAR(10) CHECK (sender IN ('user', 'assistant')),
+    message TEXT NOT NULL,
+    meta JSONB, -- dados extras: calorias, refeição, etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* 9. Sessões de conversa (opcional, mas útil) */
+CREATE TABLE chat_sessions (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ended_at TIMESTAMP,
+    context_summary TEXT
+);
