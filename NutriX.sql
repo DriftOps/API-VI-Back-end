@@ -268,10 +268,14 @@ CREATE TYPE activity_type_enum AS ENUM (
 -- Frequency type (Frequência)
 CREATE TYPE frequency_type AS ENUM (
     'NONE',          -- NENHUMA
-    'ONE_2X_WEEK',   -- 1_2X_SEMANA
-    'THREE_4X_WEEK', -- 3_4X_SEMANA
-    'FIVE_X_OR_MORE' -- 5X_OU_MAIS
+    'ONE_TWO_WEEK',   -- 1_2X_SEMANA
+    'THREE_FOUR_WEEK', -- 3_4X_SEMANA
+    'FIVE_OR_MORE' -- 5X_OU_MAIS
 );
+
+SELECT frequency, COUNT(*) 
+FROM user_anamnesis 
+GROUP BY frequency;
 
 -- Sleep quality type (Qualidade do sono)
 CREATE TYPE sleep_quality_type AS ENUM (
@@ -405,3 +409,7 @@ CREATE TABLE chat_sessions (
     ended_at TIMESTAMP,
     context_summary TEXT
 );
+
+UPDATE users 
+SET password = '$2a$10$ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJK' 
+WHERE email = 'admin@nutrix.com';
