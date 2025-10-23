@@ -8,6 +8,8 @@ com/xertica/entity/DietaryPreference$DietaryPreferenceBuilder.class
 com/xertica/entity/ChatSession.class
 com/xertica/repository/DietaryRestrictionRepository.class
 com/xertica/entity/Faq.class
+com/xertica/mapper/UserMapper.class
+com/xertica/dto/context/AnamnesisContextDTO.class
 com/xertica/entity/DietaryRestriction$DietaryRestrictionBuilder.class
 com/xertica/entity/Faq$FaqBuilder.class
 com/xertica/entity/UserAnamnesis.class
@@ -44,6 +46,7 @@ com/xertica/entity/JwtUtil.class
 com/xertica/repository/FaqRepository.class
 com/xertica/mapper/UserAnamnesisMapper.class
 com/xertica/dto/UserLoginDTO.class
+com/xertica/dto/context/AIContextDTO.class
 com/xertica/dto/FaqViewDTO.class
 com/xertica/entity/enums/anamnesis/WakesDuringNightType.class
 com/xertica/controller/UserAnamnesisController.class
@@ -59,6 +62,7 @@ com/xertica/dto/LoginResponseDTO.class
 com/xertica/dto/UserAnamnesisDTO.class
 com/xertica/entity/enums/UserRole.class
 com/xertica/entity/enums/GoalType.class
+com/xertica/dto/context/UserContextDTO.class
 com/xertica/dto/FaqCreateDTO.class
 com/xertica/config/SecurityConfig$JwtAuthenticationFilter.class
 com/xertica/repository/UserRestrictionRepository.class
