@@ -7,19 +7,16 @@ Assim você garante consistência e pode expandir futuramente.
 -- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
 -- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
 
-SELECT * FROM users;
-SELECT * FROM user_anamnesis;
+-- SELECT * FROM users;
+-- SELECT * FROM user_anamnesis;
 
 --DELETE from user_anamnesis where id=3;
 -- DELETE from users where id=29;
 
 -- ALTER TABLE user_anamnesis ALTER COLUMN main_goal DROP NOT NULL;
 
-ALTER TABLE users
-ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;
-
-ALTER TABLE users
-DROP COLUMN activity_level;
+-- ALTER TABLE users
+-- DROP COLUMN activity_level;
 
 CREATE TYPE user_role AS ENUM (
     'CLIENT',
@@ -134,6 +131,7 @@ CREATE TABLE meal_plans (
 /*6. Sessões de chat com LLM
 Separar sessões facilita análise e rastreamento.
 */
+/* Sessões de conversa (opcional) */
 CREATE TABLE chat_sessions (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -207,17 +205,17 @@ SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
 
 -- ADMIN USER
 INSERT INTO users (
-    name, email, password, role, height, weight, birth_date
+    name, email, password, role, gender, height, weight, birth_date, approved
 ) VALUES (
     'admin',
     'admin@nutrix.com',
     'pass1234',
     'ADMIN',
-    'IMPROVE_STRENGTH',
+    'MALE',
     184,
     83.5,
     '1999-12-10',
-    'ACTIVE'
+    true
 )
 RETURNING id;
 
@@ -273,9 +271,9 @@ CREATE TYPE frequency_type AS ENUM (
     'FIVE_OR_MORE' -- 5X_OU_MAIS
 );
 
-SELECT frequency, COUNT(*) 
-FROM user_anamnesis 
-GROUP BY frequency;
+-- SELECT frequency, COUNT(*) 
+-- FROM user_anamnesis 
+-- GROUP BY frequency;
 
 -- Sleep quality type (Qualidade do sono)
 CREATE TYPE sleep_quality_type AS ENUM (
@@ -373,7 +371,7 @@ INSERT INTO user_anamnesis (
     'Lactose intolerance',    -- Alergias
     'Cesarean',               -- Cirurgias
     'WEIGHT_TRAINING',        -- Tipo de atividade
-    '3_4X_WEEK',              -- Frequência semanal
+    'THREE_FOUR_WEEK',              -- Frequência semanal
     60,                       -- Minutos de atividade por dia
     'REGULAR',                -- Qualidade do sono
     'ONCE',                   -- Acorda durante a noite
@@ -400,16 +398,3 @@ CREATE TABLE chat_history (
     meta JSONB, -- dados extras: calorias, refeição, etc.
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-/* 9. Sessões de conversa (opcional, mas útil) */
-CREATE TABLE chat_sessions (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ended_at TIMESTAMP,
-    context_summary TEXT
-);
-
-UPDATE users 
-SET password = '$2a$10$ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJK' 
-WHERE email = 'admin@nutrix.com';

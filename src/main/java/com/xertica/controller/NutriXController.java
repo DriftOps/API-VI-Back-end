@@ -3,6 +3,8 @@ package com.xertica.controller;
 import com.xertica.entity.*;
 import com.xertica.repository.*;
 import com.xertica.service.NutriXService;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +23,11 @@ public class NutriXController {
     private final UserRepository userRepo;
 
     @PostMapping("/chat/{userId}")
+    @Transactional
     public ResponseEntity<?> chat(@PathVariable Long userId, @RequestBody Map<String, String> payload) {
         String message = payload.get("message");
 
-        // 1️⃣ Busca ou cria sessão ativa
+        // Busca ou cria sessão ativa
         ChatSession session = sessionRepo.findActiveByUserId(userId)
                 .orElseGet(() -> {
                     ChatSession newSession = new ChatSession();
@@ -32,7 +35,7 @@ public class NutriXController {
                     return sessionRepo.save(newSession);
                 });
 
-        // 2️⃣ Monta histórico pro Python
+        // 2Monta histórico pro Python
         List<Map<String, String>> formatted = session.getMessages() != null
                 ? session.getMessages().stream()
                     .map(m -> Map.of("sender", m.getSender(), "text", m.getMessage()))
