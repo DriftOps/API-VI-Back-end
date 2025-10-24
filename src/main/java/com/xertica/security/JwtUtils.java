@@ -3,12 +3,18 @@ package com.xertica.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.security.Key;
 
 public class JwtUtils {
 
-    private final static Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // ✅ Defina uma string secreta longa e segura. Use isso para testar.
+    private static final String JWT_SECRET = "======================NutriX_JWT_Secret=========================";
+
+    // ✅ Gera uma chave persistente a partir da sua string secreta
+    private final static Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+
     private final static long EXPIRATION = 86400000; // 24h
 
     public static String generateToken(String email, Long userId) {

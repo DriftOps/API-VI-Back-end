@@ -1,7 +1,11 @@
 package com.xertica.controller;
 
 import com.xertica.dto.*;
+import com.xertica.dto.context.AIContextDTO;
 import com.xertica.service.UserService;
+import com.xertica.service.UserAnamnesisService;
+import com.xertica.entity.User;
+import com.xertica.entity.UserAnamnesis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,6 +13,8 @@ import org.springframework.security.core.Authentication; // ✅ CORRETO
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -17,6 +23,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserAnamnesisService anamnesisService;
 
     // 🔥 ENDPOINT DE TESTE
     @GetMapping("/test-auth")
@@ -96,5 +103,13 @@ public class UserController {
         String email = authentication.getName();
         UserProfileDTO updatedUser = userService.updateUserProfile(email, dto);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/context")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AIContextDTO> getCurrentUserContext(Authentication authentication) {
+        String email = authentication.getName();
+        AIContextDTO context = userService.getUserContextForAI(email);
+        return ResponseEntity.ok(context);
     }
 }

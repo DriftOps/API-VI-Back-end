@@ -2,8 +2,6 @@ package com.xertica.entity;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import com.xertica.entity.enums.UserRole;
-import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Type;
@@ -33,15 +31,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.CLIENT;
 
-    @Enumerated(EnumType.STRING)
-    private GoalType goal;
-
     private Integer height;
     private Double weight;
     private LocalDate birthDate;
-
-    @Enumerated(EnumType.STRING)
-    private ActivityLevelType activityLevel;
+    private String gender; // ✅ CAMPO ADICIONADO
 
     @Column(columnDefinition = "jsonb")
     @Type(JsonBinaryType.class)
@@ -65,4 +58,8 @@ public class User {
     @Column(nullable = false)
     @Builder.Default
     private Boolean approved = false;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserAnamnesis anamnesis;
+
 }

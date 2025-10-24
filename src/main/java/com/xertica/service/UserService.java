@@ -2,25 +2,33 @@ package com.xertica.service;
 
 import com.xertica.dto.*;
 import com.xertica.entity.*;
-import com.xertica.entity.enums.GoalType;
-import com.xertica.entity.enums.ActivityLevelType; // ✅ IMPORTAR ActivityLevelType
 import com.xertica.entity.enums.UserRole;
+import com.xertica.entity.enums.anamnesis.ActivityTypeEnum;
+import org.hibernate.Hibernate;
+import java.time.LocalDate;
+import java.time.Period;
+import com.xertica.mapper.UserMapper;
 import com.xertica.repository.*;
 import com.xertica.security.JwtUtils;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import com.xertica.dto.context.AIContextDTO;
+import com.xertica.dto.context.AnamnesisContextDTO;
+import com.xertica.dto.context.UserContextDTO;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserAnamnesisRepository userAnamnesisRepository;
     private final DietaryPreferenceRepository preferenceRepository;
     private final DietaryRestrictionRepository restrictionRepository;
     private final UserPreferenceRepository userPreferenceRepository;
@@ -28,78 +36,121 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    // Criar usuário (admin/geral)
+    // ✅ MÉTODO CORRIGIDO E UNIFICADO
     @Transactional
-    public UserViewDTO createUserAsAdmin(UserDTO dto) {
-        if (dto.getRole() == null) {
-            dto.setRole(UserRole.CLIENT);
-        }
+public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        // Garanta que chatHistory seja um JSON válido
-        String chatHistory = dto.getChatHistory();
-        if (chatHistory == null || chatHistory.trim().isEmpty()) {
-            chatHistory = "[]";
-        }
-
-        User user = User.builder()
-                .name(dto.getName())
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .role(dto.getRole())
-                .goal(dto.getGoal())
-                .height(dto.getHeight())
-                .weight(dto.getWeight())
-                .birthDate(dto.getBirthDate())
-                .activityLevel(dto.getActivityLevel())
-                .chatHistory(chatHistory)
-                .plan(dto.getPlan())
-                .approved(true) // 🔥 DIFERENÇA: Já cria aprovado
-                .build();
-
-        userRepository.save(user);
-        return toUserViewDTO(user);
+    // 1. Atualiza dados do User
+    if (dto.getWeight() != null) user.setWeight(dto.getWeight());
+    if (dto.getHeight() != null) user.setHeight(dto.getHeight());
+    if (dto.getBirthDate() != null && !dto.getBirthDate().isEmpty()) {
+        user.setBirthDate(java.time.LocalDate.parse(dto.getBirthDate()));
     }
 
-    // Listar todos usuários
-    public List<UserViewDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toUserViewDTO)
-                .collect(Collectors.toList());
+    // 2. Atualiza dados da Anamnesis
+    UserAnamnesis anamnesis = userAnamnesisRepository.findByUserId(user.getId())
+            .orElse(new UserAnamnesis());
+
+    anamnesis.setUser(user);
+    user.setAnamnesis(anamnesis);
+    
+    // Atualiza campos de seleção única e outros
+    if (dto.getGoal() != null) anamnesis.setMainGoal(dto.getGoal());
+    if (dto.getActivityLevel() != null) anamnesis.setActivityType(dto.getActivityLevel());
+    if (dto.getFrequency() != null) anamnesis.setFrequency(dto.getFrequency());
+    if (dto.getActivityMinutesPerDay() != null) anamnesis.setActivityMinutesPerDay(dto.getActivityMinutesPerDay());
+    if (dto.getSleepQuality() != null) anamnesis.setSleepQuality(dto.getSleepQuality());
+    if (dto.getWakesDuringNight() != null) anamnesis.setWakesDuringNight(dto.getWakesDuringNight());
+    if (dto.getBowelFrequency() != null) anamnesis.setBowelFrequency(dto.getBowelFrequency());
+    if (dto.getAlcoholUse() != null) anamnesis.setAlcoholUse(dto.getAlcoholUse());
+    if (dto.getSmoking() != null) anamnesis.setSmoking(dto.getSmoking());
+    if (dto.getHydrationLevel() != null) anamnesis.setHydrationLevel(dto.getHydrationLevel());
+    if (dto.getContinuousMedication() != null) anamnesis.setContinuousMedication(dto.getContinuousMedication());
+    
+    // ✅ CORREÇÃO: Lógica simplificada para substituir os valores dos seletores múltiplos
+    // Como o front-end envia a lista completa, apenas salvamos o novo valor.
+    if (dto.getMedicalConditions() != null) {
+        anamnesis.setMedicalConditions(dto.getMedicalConditions());
+    }
+    if (dto.getAllergies() != null) {
+        anamnesis.setAllergies(dto.getAllergies());
+    }
+    if (dto.getSurgeries() != null) {
+        anamnesis.setSurgeries(dto.getSurgeries());
     }
 
-    // Signup
+    // 3. Atualiza preferências e restrições (se aplicável)
+    if (dto.getDietaryPreferences() != null) {
+        userPreferenceRepository.deleteByUser(user);
+        user.getPreferences().clear();
+        for (String prefName : dto.getDietaryPreferences()) {
+            DietaryPreference pref = preferenceRepository.findByName(prefName)
+                    .orElseGet(() -> preferenceRepository.save(new DietaryPreference(null, prefName)));
+            user.getPreferences().add(new UserPreference(user, pref));
+        }
+    }
+    if (dto.getRestrictions() != null) {
+        userRestrictionRepository.deleteByUser(user);
+        user.getRestrictions().clear();
+        for (String resName : dto.getRestrictions()) {
+            DietaryRestriction res = restrictionRepository.findByName(resName)
+                    .orElseGet(() -> restrictionRepository.save(new DietaryRestriction(null, resName)));
+            user.getRestrictions().add(new UserRestriction(user, res));
+        }
+    }
+
+    // 4. Salva e retorna
+    User updatedUser = userRepository.save(user);
+    return UserMapper.toUserProfileDTO(updatedUser);
+}
+
+    // --- DEMAIS MÉTODOS (signup, login, etc. sem alterações) ---
     @Transactional
     public UserViewDTO signup(UserDTO dto) {
-        if (dto.getRole() == null) {
-            dto.setRole(UserRole.CLIENT);
-        }
-
-        // Garanta que chatHistory seja um JSON válido
-        String chatHistory = dto.getChatHistory();
-        if (chatHistory == null || chatHistory.trim().isEmpty()) {
-            chatHistory = "[]"; // JSON array vazio
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("O e-mail informado já está em uso.");
         }
 
         User user = User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
-                .role(dto.getRole())
-                .goal(dto.getGoal())
+                .role(UserRole.CLIENT)
                 .height(dto.getHeight())
                 .weight(dto.getWeight())
                 .birthDate(dto.getBirthDate())
-                .activityLevel(dto.getActivityLevel())
-                .chatHistory(chatHistory)
-                .plan(dto.getPlan())
+                .gender(dto.getGender())
                 .approved(false)
                 .build();
 
         userRepository.save(user);
         return toUserViewDTO(user);
     }
+    
+    @Transactional
+    public UserViewDTO createUserAsAdmin(UserDTO dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("O e-mail informado já está em uso.");
+        }
 
-    // Login
+        User user = User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .role(dto.getRole() != null ? dto.getRole() : UserRole.CLIENT)
+                .height(dto.getHeight())
+                .weight(dto.getWeight())
+                .birthDate(dto.getBirthDate())
+                .gender(dto.getGender())
+                .approved(true)
+                .build();
+
+        userRepository.save(user);
+        return toUserViewDTO(user);
+    }
+    
     public LoginResponseDTO login(UserLoginDTO dto) {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuário ou senha inválidos"));
@@ -108,7 +159,6 @@ public class UserService {
             throw new RuntimeException("Usuário ou senha inválidos");
         }
 
-        // Para ADMIN, não exigir aprovação
         if (!user.getApproved() && user.getRole() != UserRole.ADMIN) {
             throw new RuntimeException("Usuário ainda não aprovado pelo administrador.");
         }
@@ -122,7 +172,7 @@ public class UserService {
                 user.getRole(),
                 token);
     }
-
+    
     @Transactional
     public void approveUser(Long id) {
         User user = userRepository.findById(id)
@@ -130,7 +180,6 @@ public class UserService {
         user.setApproved(true);
         userRepository.save(user);
 
-        // Envia e-mail (com try-catch para não quebrar a aprovação)
         try {
             String subject = "Sua conta foi aprovada!";
             String text = "Olá " + user.getName() + ",\n\n" +
@@ -139,154 +188,98 @@ public class UserService {
                     "Atenciosamente,\nEquipe NutriX";
 
             emailService.sendEmail(user.getEmail(), subject, text);
-            System.out.println("Email enviado para: " + user.getEmail());
         } catch (Exception e) {
-            System.out.println("❌ Erro ao enviar email, mas usuário foi aprovado: " + e.getMessage());
-            // Não relança a exceção - a aprovação foi bem sucedida
+            System.err.println("❌ Erro ao enviar email, mas usuário foi aprovado: " + e.getMessage());
         }
     }
 
-    // Buscar usuário por email (apenas dados básicos)
-    public UserViewDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        return toUserViewDTO(user);
+    public List<UserViewDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::toUserViewDTO)
+                .collect(Collectors.toList());
     }
 
-    // Buscar perfil completo do usuário por email
+    // ✅ CORREÇÃO: Removidas as definições duplicadas. Apenas uma de cada método.
+    @Transactional(readOnly = true)
     public UserProfileDTO getUserProfileByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        return toUserProfileDTO(user);
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
+        return UserMapper.toUserProfileDTO(user);
     }
 
-    // Buscar perfil completo do usuário por ID
+    @Transactional(readOnly = true)
     public UserProfileDTO getUserProfile(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        return toUserProfileDTO(user);
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + id));
+        return UserMapper.toUserProfileDTO(user);
     }
 
-    // Atualizar perfil do usuário (chaves fechadas corretamente)
-    @Transactional
-    public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        // Atualizar campos básicos (convertendo String para enum quando necessário)
-        if (dto.getGoal() != null) {
-            try {
-                user.setGoal(GoalType.valueOf(dto.getGoal())); // Converter String para Enum
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Valor de objetivo inválido: " + dto.getGoal());
-            }
-        } // ✅ FECHAR CHAVE DO IF DO GOAL
-
-        if (dto.getWeight() != null) user.setWeight(dto.getWeight());
-        if (dto.getHeight() != null) user.setHeight(dto.getHeight());
-
-        // Converter String para LocalDate
-        if (dto.getBirthDate() != null) {
-            user.setBirthDate(LocalDate.parse(dto.getBirthDate()));
-        }
-
-        // Converter String para Enum
-        if (dto.getActivityLevel() != null) {
-            try {
-                user.setActivityLevel(ActivityLevelType.valueOf(dto.getActivityLevel()));
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Valor de nível de atividade inválido: " + dto.getActivityLevel());
-            }
-        } // ✅ FECHAR CHAVE DO IF DO ACTIVITY_LEVEL
-
-        if (dto.getPlan() != null) user.setPlan(dto.getPlan());
-
-        // Atualizar preferências alimentares
-        if (dto.getDietaryPreferences() != null) {
-            // Remove preferências existentes
-            userPreferenceRepository.deleteByUser(user);
-
-            // Adiciona novas preferências
-            for (String prefName : dto.getDietaryPreferences()) {
-                DietaryPreference pref = preferenceRepository.findByName(prefName)
-                        .orElseGet(() -> preferenceRepository.save(new DietaryPreference(null, prefName)));
-                userPreferenceRepository.save(new UserPreference(user, pref));
-            }
-        }
-
-        // Atualizar restrições alimentares
-        if (dto.getRestrictions() != null) {
-            // Remove restrições existentes
-            userRestrictionRepository.deleteByUser(user);
-
-            // Adiciona novas restrições
-            for (String resName : dto.getRestrictions()) {
-                DietaryRestriction res = restrictionRepository.findByName(resName)
-                        .orElseGet(() -> restrictionRepository.save(new DietaryRestriction(null, resName)));
-                userRestrictionRepository.save(new UserRestriction(user, res));
-            }
-        }
-
-        userRepository.save(user);
-        return toUserProfileDTO(user);
-    }
-
-    // Método para verificar se é o mesmo usuário (usado no @PreAuthorize)
     public boolean isSameUser(Long userId, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-        return user.getId().equals(userId);
+        return userRepository.findByEmail(email)
+                .map(user -> user.getId().equals(userId))
+                .orElse(false);
     }
 
-    // ===== HELPERS =====
-
-    // Converter User para UserViewDTO (dados básicos)
     private UserViewDTO toUserViewDTO(User user) {
-    return new UserViewDTO(
-            user.getId(),
-            user.getName(),
-            user.getEmail(),
-            user.getRole(),
-            user.getApproved()
-    );
-    }
-
-    // Converter User para UserProfileDTO (dados completos)
-    private UserProfileDTO toUserProfileDTO(User user) {
-        // Buscar preferências do usuário
-        List<String> preferences = userPreferenceRepository.findByUser(user)
-                .stream()
-                .map(up -> up.getPreference().getName())
-                .collect(Collectors.toList());
-
-        // Buscar restrições do usuário
-        List<String> restrictions = userRestrictionRepository.findByUser(user)
-                .stream()
-                .map(ur -> ur.getRestriction().getName())
-                .collect(Collectors.toList());
-
-        // Converter LocalDate para String
-        String birthDateStr = user.getBirthDate() != null ? user.getBirthDate().toString() : null;
-
-        // ✅ CONVERTER ENUMS PARA STRING
-        String goalStr = user.getGoal() != null ? user.getGoal().name() : null;
-        String activityLevelStr = user.getActivityLevel() != null ? user.getActivityLevel().name() : null;
-        String roleStr = user.getRole() != null ? user.getRole().name() : null;
-
-        return new UserProfileDTO(
+        return new UserViewDTO(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                roleStr,
-                goalStr,
-                user.getWeight(),
-                user.getHeight(),
-                birthDateStr,
-                activityLevelStr,
-                preferences,
-                restrictions,
-                user.getPlan(),
+                user.getRole(),
                 user.getApproved()
         );
     }
+
+    @Transactional(readOnly = true)
+        public User findUserByEmail(String email) {
+            return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
+}
+
+@Transactional(readOnly = true)
+public AIContextDTO getUserContextForAI(String email) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o e-mail: " + email));
+
+    UserAnamnesis anamnesis = user.getAnamnesis();
+
+    // Mapeia os dados do usuário para o DTO - FORMA CORRIGIDA
+    UserContextDTO userDTO = new UserContextDTO();
+    userDTO.setName(user.getName());
+    userDTO.setWeight(user.getWeight());
+    
+    // Converte a altura para Double, caso seja Integer na entidade
+    if (user.getHeight() != null) {
+        userDTO.setHeight(user.getHeight().doubleValue());
+    }
+    if (user.getBirthDate() != null) {
+        userDTO.setAge(Period.between(user.getBirthDate(), LocalDate.now()).getYears());
+    }
+    if (user.getGender() != null) {
+        userDTO.setGender(user.getGender()); // Gênero PODE ser um Enum, então mantemos .name() aqui.
+    }
+
+    // Mapeia os dados da anamnese para o DTO (já estava correto)
+    AnamnesisContextDTO anamnesisDTO = new AnamnesisContextDTO();
+    if (anamnesis != null) {
+        anamnesisDTO.setMainGoal(anamnesis.getMainGoal() != null ? anamnesis.getMainGoal().name() : "N/A");
+        anamnesisDTO.setMedicalConditions(anamnesis.getMedicalConditions());
+        anamnesisDTO.setAllergies(anamnesis.getAllergies());
+        anamnesisDTO.setSurgeries(anamnesis.getSurgeries());
+        anamnesisDTO.setActivityType(anamnesis.getActivityType() != null ? anamnesis.getActivityType().name() : "N/A");
+        anamnesisDTO.setFrequency(anamnesis.getFrequency() != null ? anamnesis.getFrequency().name() : "N/A");
+        anamnesisDTO.setActivityMinutesPerDay(anamnesis.getActivityMinutesPerDay());
+        anamnesisDTO.setSleepQuality(anamnesis.getSleepQuality() != null ? anamnesis.getSleepQuality().name() : "N/A");
+        anamnesisDTO.setWakesDuringNight(anamnesis.getWakesDuringNight() != null ? anamnesis.getWakesDuringNight().name() : "N/A");
+        anamnesisDTO.setBowelFrequency(anamnesis.getBowelFrequency() != null ? anamnesis.getBowelFrequency().name() : "N/A");
+        anamnesisDTO.setStressLevel(anamnesis.getStressLevel() != null ? anamnesis.getStressLevel().name() : "N/A");
+        anamnesisDTO.setAlcoholUse(anamnesis.getAlcoholUse() != null ? anamnesis.getAlcoholUse().name() : "N/A");
+        anamnesisDTO.setSmoking(anamnesis.getSmoking());
+        anamnesisDTO.setHydrationLevel(anamnesis.getHydrationLevel() != null ? anamnesis.getHydrationLevel().name() : "N/A");
+        anamnesisDTO.setContinuousMedication(anamnesis.getContinuousMedication());
+    }
+
+    return new AIContextDTO(userDTO, anamnesisDTO);
+}
+
 }
