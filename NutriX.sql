@@ -78,7 +78,7 @@ CREATE TABLE users (
 
 UPDATE users
 SET approved = true
-WHERE id IN (1);
+WHERE id IN (2);
 
 /*3. Preferências e restrições alimentares
 Separadas em tabelas auxiliares para normalização e reutilização.
