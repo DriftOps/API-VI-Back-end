@@ -3,11 +3,13 @@
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/config/MailConfig.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/config/SecurityConfig.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/controller/FaqController.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/controller/MealController.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/controller/UserAnamnesisController.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/controller/UserController.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/FaqCreateDTO.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/FaqViewDTO.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/LoginResponseDTO.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/MealDTO.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/UserAnamnesisDTO.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/UserCreateDTO.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/dto/UserDTO.java
@@ -24,6 +26,7 @@
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/DietaryRestriction.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/Faq.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/JwtUtil.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/Meal.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/MealPlan.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/User.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/UserAnamnesis.java
@@ -41,11 +44,13 @@
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/enums/anamnesis/SleepQualityType.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/enums/anamnesis/StressLevelType.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/entity/enums/anamnesis/WakesDuringNightType.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/mapper/MealMapper.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/mapper/UserAnamnesisMapper.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/mapper/UserMapper.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/DietaryPreferenceRepository.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/DietaryRestrictionRepository.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/FaqRepository.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/MealRepository.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/UserAnamnesisRepository.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/UserPreferenceRepository.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/repository/UserRepository.java
@@ -53,5 +58,6 @@
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/security/JwtUtils.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/service/EmailService.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/service/FaqService.java
+/Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/service/MealService.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/service/UserAnamnesisService.java
 /Users/ALEKS/Downloads/API-VI-Back-end/src/main/java/com/xertica/service/UserService.java

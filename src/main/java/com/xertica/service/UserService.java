@@ -278,8 +278,21 @@ public AIContextDTO getUserContextForAI(String email) {
         anamnesisDTO.setHydrationLevel(anamnesis.getHydrationLevel() != null ? anamnesis.getHydrationLevel().name() : "N/A");
         anamnesisDTO.setContinuousMedication(anamnesis.getContinuousMedication());
     }
-
+    
     return new AIContextDTO(userDTO, anamnesisDTO);
+}
+
+@Transactional(readOnly = true)
+public User getUserFromToken(String token) {
+    if (token == null || !token.startsWith("Bearer ")) {
+        throw new IllegalArgumentException("Token inválido ou ausente.");
+    }
+
+    String jwt = token.substring(7); // remove o "Bearer "
+    String email = JwtUtils.validateToken(jwt).getBody().getSubject();
+
+    return userRepository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado para o token informado."));
 }
 
 }

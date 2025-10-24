@@ -13,3 +13,5 @@ CREATE TABLE meals (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+select * from meals;

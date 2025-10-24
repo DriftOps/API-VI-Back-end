@@ -6,8 +6,10 @@ import com.xertica.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +20,16 @@ public class MealService {
         return mealRepository.findByUser(user);
     }
 
+    public List<Meal> getMealsByDate(User user, LocalDate date) {
+        return mealRepository.findByUserAndMealDate(user, date);
+    }
+
     public Meal saveMeal(Meal meal, User user) {
         meal.setUser(user);
-        meal.setCreatedAt(LocalDateTime.now());
+        if (meal.getMealDate() == null) {
+            meal.setMealDate(LocalDate.now());
+        }
+        meal.setCreatedAt(LocalDateTime.now()); // 👈 ADICIONE ESTA LINHA
         return mealRepository.save(meal);
     }
 
