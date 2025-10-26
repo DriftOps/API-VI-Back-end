@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import com.xertica.dto.context.AIContextDTO;
 import com.xertica.dto.context.AnamnesisContextDTO;
-import com.xertica.dto.context.UserContextDTO;
+import com.xertica.dto.context.UserContextDTO; 
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class UserService {
     private final DietaryRestrictionRepository restrictionRepository;
     private final UserPreferenceRepository userPreferenceRepository;
     private final UserRestrictionRepository userRestrictionRepository;
+    private final WeightLogRepository weightLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
@@ -294,5 +295,32 @@ public User getUserFromToken(String token) {
     return userRepository.findByEmail(email)
             .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado para o token informado."));
 }
+
+@Transactional
+    public void addWeightLog(String email, Double newWeight) {
+        User user = findUserByEmail(email); // Reutiliza seu método existente
+
+        WeightLog newLog = WeightLog.builder()
+                .user(user)
+                .weight(newWeight)
+                .logDate(LocalDate.now())
+                .build();
+        
+        weightLogRepository.save(newLog);
+
+        // Atualiza também o campo 'weight' principal do usuário
+        user.setWeight(newWeight);
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeightLogDTO> getWeightHistory(String email) {
+        User user = findUserByEmail(email);
+        
+        return weightLogRepository.findByUserOrderByLogDateAsc(user)
+                .stream()
+                .map(log -> new WeightLogDTO(log.getWeight(), log.getLogDate()))
+                .collect(Collectors.toList());
+    }
 
 }

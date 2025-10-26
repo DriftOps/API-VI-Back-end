@@ -34,7 +34,7 @@ public class User {
     private Integer height;
     private Double weight;
     private LocalDate birthDate;
-    private String gender; // ✅ CAMPO ADICIONADO
+    private String gender;
 
     @Column(columnDefinition = "jsonb")
     @Type(JsonBinaryType.class)

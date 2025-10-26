@@ -112,4 +112,27 @@ public class UserController {
         AIContextDTO context = userService.getUserContextForAI(email);
         return ResponseEntity.ok(context);
     }
+
+    @PostMapping("/me/weight")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity<Void> addWeightLog(
+        Authentication authentication, 
+        @RequestBody NewWeightLogDTO dto) {
+            
+    if (dto.weight() == null || dto.weight() <= 0) {
+        return ResponseEntity.badRequest().build();
+    }
+    
+    String email = authentication.getName();
+    userService.addWeightLog(email, dto.weight());
+    return ResponseEntity.ok().build();
+}
+
+@GetMapping("/me/weight-history")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity<List<WeightLogDTO>> getWeightHistory(Authentication authentication) {
+    String email = authentication.getName();
+    List<WeightLogDTO> history = userService.getWeightHistory(email);
+    return ResponseEntity.ok(history);
+}
 }
