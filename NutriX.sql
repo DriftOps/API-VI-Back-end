@@ -77,8 +77,9 @@ CREATE TABLE users (
 );
 
 UPDATE users
-SET approved = true
-WHERE id IN (2);
+SET approved = true;
+
+
 
 /*3. Preferências e restrições alimentares
 Separadas em tabelas auxiliares para normalização e reutilização.
@@ -385,6 +386,37 @@ RETURNING *;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 UPDATE users SET password = crypt(password,gen_salt('bf'));
+
+ALTER TABLE chat_messages
+ADD COLUMN nutritionist_comment TEXT,
+ADD COLUMN nutritionist_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+ADD COLUMN comment_timestamp TIMESTAMP;
+
+INSERT INTO users (
+    name,
+    email,
+    password, -- Lembre-se de usar o encoder no Java!
+    role,
+    gender,
+    birth_date,
+    height,
+    weight,
+    approved, -- Nutricionista já entra aprovado
+    created_at,
+    ai_assistant_enabled -- Nutricionistas geralmente não precisam do assistente para si
+) VALUES (
+    'Nutrix',                     -- Nome do Nutricionista
+    'nutrix@nutrix.com',              -- Email (deve ser único)
+    '1234',                        -- Senha (!!! USAR ENCODER NO JAVA !!!)
+    'NUTRITIONIST',                         -- Papel/Role
+    'MASCULINO',                            -- Gênero (opcional)
+    '1985-05-15',                           -- Data de Nascimento (opcional)
+    178,                                    -- Altura em cm (opcional)
+    78.5,                                   -- Peso em kg (opcional)
+    TRUE,                                   -- Aprovado
+    CURRENT_TIMESTAMP,                      -- Data de criação
+    FALSE                                   -- Assistente AI desabilitado para ele
+);
 
 
 
