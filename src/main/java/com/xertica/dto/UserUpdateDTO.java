@@ -12,6 +12,7 @@ public class UserUpdateDTO {
     private String birthDate;
     private List<String> dietaryPreferences;
     private List<String> restrictions;
+    private String plan;
 
     // --- Campos Anamnesis ---
     private MainGoalType goal;
@@ -28,5 +29,5 @@ public class UserUpdateDTO {
     private Boolean smoking;
     private HydrationLevelType hydrationLevel;
     private Boolean continuousMedication;
-    // O campo 'plan' foi removido
+    
 }

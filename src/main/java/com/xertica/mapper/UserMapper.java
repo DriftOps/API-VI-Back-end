@@ -21,6 +21,7 @@ public class UserMapper {
         dto.setHeight(user.getHeight());
         dto.setBirthDate(user.getBirthDate() != null ? user.getBirthDate().toString() : null);
         dto.setApproved(user.getApproved());
+        dto.setPlan(user.getPlan());
 
         dto.setDietaryPreferences(
             user.getPreferences().stream()

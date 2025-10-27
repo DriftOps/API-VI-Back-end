@@ -49,6 +49,9 @@ public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
     if (dto.getBirthDate() != null && !dto.getBirthDate().isEmpty()) {
         user.setBirthDate(java.time.LocalDate.parse(dto.getBirthDate()));
     }
+    if (dto.getPlan() != null) {
+        user.setPlan(dto.getPlan());
+    }
 
     // 2. Atualiza dados da Anamnesis
     UserAnamnesis anamnesis = userAnamnesisRepository.findByUserId(user.getId())

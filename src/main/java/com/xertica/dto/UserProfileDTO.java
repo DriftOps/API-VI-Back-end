@@ -20,6 +20,7 @@ public class UserProfileDTO {
     private List<String> dietaryPreferences;
     private List<String> restrictions;
     private Boolean approved;
+    private String plan;
     
     // --- Campos da Anamnese ---
     private String goal; // Já existia
@@ -36,5 +37,4 @@ public class UserProfileDTO {
     private Boolean smoking;
     private HydrationLevelType hydrationLevel;
     private Boolean continuousMedication;
-    // O campo 'plan' foi removido
 }
