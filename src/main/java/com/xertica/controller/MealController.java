@@ -42,8 +42,10 @@ public class MealController {
 
 
 @PostMapping
-public MealDTO addMeal(@RequestHeader("Authorization") String token, @RequestBody Meal meal) {
+public MealDTO addMeal(@RequestHeader("Authorization") String token, @RequestBody MealDTO mealDTO) {
     User user = userService.getUserFromToken(token);
+
+    Meal meal = MealMapper.toMealEntity(mealDTO);
     Meal savedMeal = mealService.saveMeal(meal, user);
     // Converta a entidade para DTO antes de retornar
     return MealMapper.toMealDTO(savedMeal);

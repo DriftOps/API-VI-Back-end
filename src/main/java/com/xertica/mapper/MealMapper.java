@@ -17,4 +17,16 @@ public class MealMapper {
         dto.setMealDate(meal.getMealDate());
         return dto;
     }
+
+    public static Meal toMealEntity(MealDTO dto) {
+        Meal meal = new Meal();
+        meal.setType(dto.getType());
+        meal.setDescription(dto.getDescription());
+        meal.setCalories(dto.getCalories());
+        meal.setProtein(dto.getProtein());
+        meal.setCarbs(dto.getCarbs());
+        meal.setFat(dto.getFat());
+
+        return meal;
+    }
 }
