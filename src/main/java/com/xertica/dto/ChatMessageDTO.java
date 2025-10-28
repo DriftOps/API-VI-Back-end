@@ -22,4 +22,6 @@ public class ChatMessageDTO {
     
     private Long nutritionistId;
     private LocalDateTime commentTimestamp;
+
+    private String userFeedback;
 }

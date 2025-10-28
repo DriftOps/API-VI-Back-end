@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import com.xertica.entity.enums.UserFeedbackType;
 
 @Entity
 @Table(name = "chat_messages")
@@ -46,4 +47,7 @@ public class ChatMessage {
     private User nutritionist; 
     @Column(name = "comment_timestamp")
     private LocalDateTime commentTimestamp;
+
+    @Column(name = "user_feedback", length = 10)
+    private String userFeedback;
 }

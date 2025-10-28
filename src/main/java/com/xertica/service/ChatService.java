@@ -121,6 +121,7 @@ public class ChatService {
         dto.setMessage(entity.getMessage());
         dto.setTimestamp(entity.getTimestamp());
         dto.setNutritionistComment(entity.getNutritionistComment());
+        dto.setUserFeedback(entity.getUserFeedback());
         return dto;
     }
     
@@ -151,5 +152,25 @@ public class ChatService {
         message.setCommentTimestamp(LocalDateTime.now());
         
         return toDTO(messageRepository.save(message));
+    }
+
+    @Transactional
+    public void saveFeedback(String email, Long messageId, String feedback) {
+        User user = userService.findUserByEmail(email);
+        
+        ChatMessage message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new EntityNotFoundException("Mensagem não encontrada"));
+
+        if (!message.getSession().getUser().getId().equals(user.getId())) {
+            throw new SecurityException("Usuário não autorizado a dar feedback nesta mensagem.");
+        }
+        
+        if ("positive".equals(feedback) || "negative".equals(feedback)) {
+            message.setUserFeedback(feedback);
+        } else {
+            message.setUserFeedback(null); // Permite remover o feedback
+        }
+
+        messageRepository.save(message);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -41,4 +42,19 @@ public class ChatController {
         ChatMessageDTO aiResponse = chatService.saveNewMessage(email, request, token);
         return ResponseEntity.ok(aiResponse);
     }
+
+    @PostMapping("/feedback/{messageId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> giveFeedback(
+            Authentication authentication,
+            @PathVariable Long messageId,
+            @RequestBody Map<String, String> payload // Espera {"feedback": "positive"} ou {"feedback": "negative"}
+    ) {
+        String email = authentication.getName();
+        String feedback = payload.get("feedback"); // "positive", "negative", ou null
+        
+        chatService.saveFeedback(email, messageId, feedback);
+        return ResponseEntity.ok().build();
+    }
 }
+    
