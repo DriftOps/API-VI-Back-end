@@ -9,6 +9,7 @@ Assim você garante consistência e pode expandir futuramente.
 
 SELECT * FROM users;
 SELECT * FROM user_anamnesis;
+select * from meals;
 
 --DELETE from user_anamnesis where id=3;
 -- DELETE from users where id=29;
@@ -417,6 +418,11 @@ INSERT INTO users (
     CURRENT_TIMESTAMP,                      -- Data de criação
     FALSE                                   -- Assistente AI desabilitado para ele
 );
+
+CREATE TYPE user_feedback_type AS ENUM ('positive', 'negative');
+
+ALTER TABLE chat_messages
+ADD COLUMN user_feedback user_feedback_type;
 
 
 
