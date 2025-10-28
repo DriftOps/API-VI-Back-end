@@ -1,27 +1,23 @@
-/*1. Tipo ENUM para papéis de usuário
-Assim você garante consistência e pode expandir futuramente.
-*/
--- GRANT CONNECT ON DATABASE postgres TO spring;
--- GRANT USAGE ON SCHEMA public TO spring;
+-- =======================================================
+-- 1. SETUP INICIAL E EXTENSÕES
+-- =======================================================
 
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin;
--- GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO admin;
+-- Comandos de Ambiente (Manter comentados a menos que você queira usá-los)
+-- DROP DATABASE IF EXISTS "NutriX";
+-- CREATE DATABASE "NutriX";
 
-SELECT * FROM users;
-SELECT * FROM user_anamnesis;
-select * from meals;
+-- USE DATABASE NutriX; -- Este comando não é padrão no PostgreSQL. Use \c NutriX na CLI.
 
---DELETE from user_anamnesis where id=3;
--- DELETE from users where id=29;
+-- Extensão para criptografia de senhas (PGCrypto)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- ALTER TABLE user_anamnesis ALTER COLUMN main_goal DROP NOT NULL;
 
-ALTER TABLE users
-ADD COLUMN approved BOOLEAN DEFAULT FALSE NOT NULL;
+-- =======================================================
+-- 2. CRIAÇÃO DE TIPOS ENUM (DDL)
+-- * Tipos devem ser criados antes das tabelas que os utilizam.
+-- =======================================================
 
-ALTER TABLE users
-DROP COLUMN activity_level;
-
+-- 2.1 Papéis de Usuário
 CREATE TYPE user_role AS ENUM (
     'CLIENT',
     'EMPLOYEE',
@@ -29,33 +25,92 @@ CREATE TYPE user_role AS ENUM (
     'NUTRITIONIST'
 );
 
--- 1. Criar o tipo ENUM para goal
-CREATE TYPE goal_type AS ENUM (
-    'LOSE_WEIGHT',
-    'LOSE_FAT',
-    'GAIN_WEIGHT',
-    'BUILD_MUSCLE',
-    'IMPROVE_ENDURANCE',
-    'IMPROVE_STRENGTH',
-    'MAINTAIN_WEIGHT' 
+-- 2.2 Tipos para a Tabela user_anamnesis
+
+-- Main goal type (Objetivo principal)
+CREATE TYPE main_goal_type AS ENUM (
+    'WEIGHT_LOSS', 
+    'MUSCLE_GAIN', 
+    'DIABETES_CONTROL',
+    'DIET_REEDUCATION',
+    'PHYSICAL_MENTAL_PERFORMANCE'
 );
 
--- drop DATABASE NutriX;
-
--- CREATE DATABASE NutriX;
-
--- USE DATABASE NutriX;
-
--- 2. Criar o tipo ENUM para activity_level
-CREATE TYPE activity_level_type AS ENUM (
-    'SEDENTARY',     -- Quase sem exercício
-    'LIGHT',         -- Exercício leve diário
-    'MODERATE',      -- Exercício moderado médio
-    'ACTIVE',        -- Exercício frequente intenso
-    'VERY_ACTIVE' 
+-- Activity type (Tipo de atividade)
+CREATE TYPE activity_type_enum AS ENUM (
+    'SEDENTARY', 
+    'WALKING',
+    'WEIGHT_TRAINING',
+    'RUNNING',
+    'CROSSFIT',
+    'SWIMMING',
+    'FIGHT',
+    'OTHER'
 );
 
--- 3. Criar a tabela users
+-- Frequency type (Frequência)
+CREATE TYPE frequency_type AS ENUM (
+    'NONE',
+    'ONE_2X_WEEK',
+    'THREE_4X_WEEK',
+    'FIVE_X_OR_MORE'
+);
+
+-- Sleep quality type (Qualidade do sono)
+CREATE TYPE sleep_quality_type AS ENUM (
+    'GOOD',
+    'REGULAR',
+    'BAD'
+);
+
+-- Wakes during night type (Acorda durante a noite)
+CREATE TYPE wakes_during_night_type AS ENUM (
+    'NO',
+    'ONCE',
+    'MORE_THAN_ONCE'
+);
+
+-- Bowel frequency type (Frequência intestinal)
+CREATE TYPE bowel_frequency_type AS ENUM (
+    'EVERY_DAY',
+    'FIVE_X_WEEK',
+    'THREE_X_WEEK',
+    'ONE_X_WEEK'
+);
+
+-- Stress level type (Nível de estresse)
+CREATE TYPE stress_level_type AS ENUM (
+    'LOW',
+    'MODERATE',
+    'HIGH'
+);
+
+-- Alcohol use type (Uso de álcool)
+CREATE TYPE alcohol_use_type AS ENUM (
+    'DOES_NOT_CONSUME',
+    'SOCIAL_1_2X_WEEK',
+    'FREQUENT_3_4X_WEEK',
+    'DAILY_USE'
+);
+
+-- Hydration level type (Nível de hidratação)
+CREATE TYPE hydration_level_type AS ENUM (
+    'LESS_THAN_1L',
+    'BETWEEN_1_2L',
+    'BETWEEN_2_3L',
+    'MORE_THAN_3L'
+);
+
+-- Tipo para Feedback do Usuário
+CREATE TYPE user_feedback_type AS ENUM ('positive', 'negative');
+
+
+-- =======================================================
+-- 3. CRIAÇÃO DE TABELAS (DDL)
+-- * Criar tabelas principais antes das tabelas de ligação (muitos-para-muitos).
+-- =======================================================
+
+-- 3.1 Tabela users (Principal)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -72,19 +127,39 @@ CREATE TABLE users (
     ai_assistant_enabled BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
-    chat_history JSONB,
-    plan JSONB,
+    chat_history JSONB, -- Histórico de chat é melhor em tabela separada, mas ok para metadados aqui
+    plan JSONB, -- Plano alimentar é melhor em tabela separada, mas ok para metadados aqui
     approved BOOLEAN DEFAULT FALSE NOT NULL
 );
 
-UPDATE users
-SET approved = true;
+-- 3.2 Tabela user_anamnesis (Anamnese do Usuário)
+CREATE TABLE user_anamnesis (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
 
+    main_goal main_goal_type NOT NULL,
+    medical_conditions TEXT,
+    allergies TEXT,
+    surgeries TEXT,
 
+    activity_type activity_type_enum,
+    frequency frequency_type,
+    activity_minutes_per_day INT,
 
-/*3. Preferências e restrições alimentares
-Separadas em tabelas auxiliares para normalização e reutilização.
-*/
+    sleep_quality sleep_quality_type,
+    wakes_during_night wakes_during_night_type,
+
+    bowel_frequency bowel_frequency_type,
+    stress_level stress_level_type,
+    alcohol_use alcohol_use_type,
+    smoking BOOLEAN DEFAULT FALSE,
+    hydration_level hydration_level_type,
+    continuous_medication BOOLEAN DEFAULT FALSE,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3.3 Tabelas para Preferências e Restrições
 CREATE TABLE dietary_preferences (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
@@ -107,10 +182,7 @@ CREATE TABLE user_restrictions (
     PRIMARY KEY (user_id, restriction_id)
 );
 
-/*4. Progresso físico
-Permite armazenar histórico (peso, gordura, massa muscular).
-*/
-
+-- 3.4 Tabela para Progresso Físico
 CREATE TABLE user_progress (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -120,22 +192,18 @@ CREATE TABLE user_progress (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-/*5. Planos alimentares
-Cada usuário pode ter vários planos, com refeições em formato flexível (JSONB).
-*/
+-- 3.5 Tabela para Planos Alimentares
 CREATE TABLE meal_plans (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255),
     total_calories INT,
-    meals JSONB,  -- exemplo: {"café da manhã": "...", "almoço": "..."}
+    meals JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     active BOOLEAN DEFAULT TRUE
 );
 
-/*6. Sessões de chat com LLM
-Separar sessões facilita análise e rastreamento.
-*/
+-- 3.6 Tabelas para Sessões de Chat com LLM
 CREATE TABLE chat_sessions (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -152,21 +220,55 @@ CREATE TABLE chat_messages (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-/*7. Logs de atividades
-Para rastrear ações importantes do usuário.
-*/
+-- 3.7 Tabela para Logs de Atividades
 CREATE TABLE user_activity_logs (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    activity_type VARCHAR(50), -- ex: 'login', 'update_profile', 'generated_plan'
+    activity_type VARCHAR(50), 
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Primeiro insere o usuário
+
+-- =======================================================
+-- 4. ALTERAÇÕES DE TABELAS (DDL)
+-- * Ajustes estruturais que dependem das tabelas existirem.
+-- =======================================================
+
+-- Adiciona campos de moderação e feedback na tabela de mensagens
+ALTER TABLE chat_messages
+ADD COLUMN nutritionist_comment TEXT,
+ADD COLUMN nutritionist_id INT REFERENCES users(id) ON DELETE SET NULL,
+ADD COLUMN comment_timestamp TIMESTAMP,
+ADD COLUMN user_feedback user_feedback_type;
+
+-- Comentário da sua anotação (não será executado se o campo main_goal for NOT NULL no DDL):
+-- ALTER TABLE user_anamnesis ALTER COLUMN main_goal DROP NOT NULL;
+
+
+-- =======================================================
+-- 5. INSERÇÃO DE DADOS (DML)
+-- * População inicial das tabelas.
+-- =======================================================
+
+-- 5.1 Inserir Restrições e Preferências (tabelas auxiliares)
+INSERT INTO dietary_restrictions (name) VALUES 
+    ('lactose'),
+    ('gluten')
+ON CONFLICT (name) DO NOTHING;
+
+INSERT INTO dietary_preferences (name) VALUES 
+    ('low-carb'),
+    ('vegano')
+ON CONFLICT (name) DO NOTHING;
+
+-- 5.2 Inserir Usuários (IDs 1, 2 e 3)
+-- (O ID é crucial para as FOREIGN KEYs seguintes)
+
+-- Usuário 1: CLIENTE (Maria Silva)
 INSERT INTO users (
     name, email, password, height, weight, birth_date,
-    chat_history, plan
+    chat_history, plan, approved
 ) VALUES (
     'Maria Silva',
     'maria.silva@example.com',
@@ -182,248 +284,103 @@ INSERT INTO users (
         "refeicoes": [
             {"tipo": "café da manhã", "descricao": "Ovos mexidos com espinafre"}
         ]
-    }'::jsonb
-)
-RETURNING id;
+    }'::jsonb,
+    FALSE -- Cliente começa como FALSE
+) RETURNING id;
 
-
--- Inserir restrições (se ainda não existirem)
-INSERT INTO dietary_restrictions (name) VALUES ('lactose')
-    ON CONFLICT (name) DO NOTHING;
-INSERT INTO dietary_restrictions (name) VALUES ('gluten')
-    ON CONFLICT (name) DO NOTHING;
-
--- Vincular restrições ao usuário
-INSERT INTO user_restrictions (user_id, restriction_id)
-SELECT 1, id FROM dietary_restrictions WHERE name IN ('lactose', 'gluten');
-
--- Inserir preferências (se ainda não existirem)
-INSERT INTO dietary_preferences (name) VALUES ('low-carb')
-    ON CONFLICT (name) DO NOTHING;
-INSERT INTO dietary_preferences (name) VALUES ('vegano')
-    ON CONFLICT (name) DO NOTHING;
-
--- Vincular preferências ao usuário
-INSERT INTO user_preferences (user_id, preference_id)
-SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
-
--- ADMIN USER
+-- Usuário 2: ADMIN
 INSERT INTO users (
-    name, email, password, role, height, weight, birth_date
+    name, email, password, role, height, weight, birth_date, approved
 ) VALUES (
     'admin',
     'admin@nutrix.com',
     'pass1234',
     'ADMIN',
-    'IMPROVE_STRENGTH',
     184,
     83.5,
     '1999-12-10',
-    'ACTIVE'
-)
-RETURNING id;
+    TRUE -- Admin já entra aprovado
+) RETURNING id;
+
+-- Usuário 3: NUTRITIONIST (Nutrix)
+INSERT INTO users (
+    name, email, password, role, gender, birth_date, height, weight, approved, ai_assistant_enabled
+) VALUES (
+    'Nutrix',
+    'nutrix@nutrix.com',
+    '1234',
+    'NUTRITIONIST',
+    'MASCULINO',
+    '1985-05-15',
+    178,
+    78.5,
+    TRUE, -- Nutricionista já entra aprovado
+    FALSE
+) RETURNING id;
 
 
--- Inserir restrições (se ainda não existirem)
-INSERT INTO dietary_restrictions (name) VALUES ('lactose')
-    ON CONFLICT (name) DO NOTHING;
-INSERT INTO dietary_restrictions (name) VALUES ('gluten')
-    ON CONFLICT (name) DO NOTHING;
+-- 5.3 Inserir Anamnese (para o usuário ADMIN - ID 2)
+INSERT INTO user_anamnesis (
+    user_id,
+    main_goal, medical_conditions, allergies, surgeries,
+    activity_type, frequency, activity_minutes_per_day,
+    sleep_quality, wakes_during_night,
+    bowel_frequency, stress_level, alcohol_use, smoking, hydration_level, continuous_medication
+) VALUES (
+    2, 
+    'WEIGHT_LOSS', 
+    'Hypertension; Gastritis',
+    'Lactose intolerance', 
+    'Cesarean', 
+    'WEIGHT_TRAINING', 
+    'THREE_4X_WEEK', 
+    60,
+    'REGULAR', 
+    'ONCE',
+    'EVERY_DAY', 
+    'MODERATE', 
+    'SOCIAL_1_2X_WEEK', 
+    FALSE, 
+    'BETWEEN_2_3L', 
+    TRUE
+) RETURNING *;
 
--- Vincular restrições ao usuário
+
+-- 5.4 Ligar Restrições e Preferências (Usando IDs de exemplo 1 e 2 para demonstração)
+-- Assumindo que os primeiros dois usuários inseridos foram ID 1 e ID 2.
+-- Maria (ID 1)
+INSERT INTO user_restrictions (user_id, restriction_id)
+SELECT 1, id FROM dietary_restrictions WHERE name IN ('lactose', 'gluten');
+
+INSERT INTO user_preferences (user_id, preference_id)
+SELECT 1, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
+
+-- Admin (ID 2)
 INSERT INTO user_restrictions (user_id, restriction_id)
 SELECT 2, id FROM dietary_restrictions WHERE name IN ('lactose', 'gluten');
 
--- Inserir preferências (se ainda não existirem)
-INSERT INTO dietary_preferences (name) VALUES ('low-carb')
-    ON CONFLICT (name) DO NOTHING;
-INSERT INTO dietary_preferences (name) VALUES ('vegano')
-    ON CONFLICT (name) DO NOTHING;
-
--- Vincular preferências ao usuário
 INSERT INTO user_preferences (user_id, preference_id)
 SELECT 2, id FROM dietary_preferences WHERE name IN ('low-carb', 'vegano');
 
--- Tipos ENUM para as respostas
 
--- Main goal type (Objetivo principal)
-CREATE TYPE main_goal_type AS ENUM (
-    'WEIGHT_LOSS',              -- EMAGRECIMENTO
-    'MUSCLE_GAIN',              -- GANHO_MASSA_MUSCULAR
-    'DIABETES_CONTROL',         -- CONTROLE_DIABETES
-    'DIET_REEDUCATION',         -- REEDUCACAO_ALIMENTAR
-    'PHYSICAL_MENTAL_PERFORMANCE' -- PERFORMANCE_FISICA_MENTAL
-);
+-- 5.5 Atualizar Senhas (Após a inserção de todos os usuários)
+UPDATE users 
+SET password = crypt(password, gen_salt('bf'));
 
--- Activity type (Tipo de atividade)
-CREATE TYPE activity_type_enum AS ENUM (
-    'SEDENTARY',    -- SEDENTARIO
-    'WALKING',      -- CAMINHADA
-    'WEIGHT_TRAINING', -- MUSCULACAO
-    'RUNNING',      -- CORRIDA
-    'CROSSFIT',     -- CROSSFIT
-    'SWIMMING',     -- NATACAO
-    'FIGHT',        -- LUTA
-    'OTHER'         -- OUTRO
-);
-
--- Frequency type (Frequência)
-CREATE TYPE frequency_type AS ENUM (
-    'NONE',          -- NENHUMA
-    'ONE_2X_WEEK',   -- 1_2X_SEMANA
-    'THREE_4X_WEEK', -- 3_4X_SEMANA
-    'FIVE_X_OR_MORE' -- 5X_OU_MAIS
-);
-
--- Sleep quality type (Qualidade do sono)
-CREATE TYPE sleep_quality_type AS ENUM (
-    'GOOD',         -- BOA
-    'REGULAR',      -- REGULAR
-    'BAD'           -- RUIM
-);
-
--- Wakes during night type (Acorda durante a noite)
-CREATE TYPE wakes_during_night_type AS ENUM (
-    'NO',           -- NAO
-    'ONCE',         -- 1X
-    'MORE_THAN_ONCE'-- MAIS_DE_1X
-);
-
--- Bowel frequency type (Frequência intestinal)
-CREATE TYPE bowel_frequency_type AS ENUM (
-    'EVERY_DAY',        -- TODO_DIA
-    'FIVE_X_WEEK',      -- 5X_SEMANA
-    'THREE_X_WEEK',     -- 3X_SEMANA
-    'ONE_X_WEEK'        -- 1X_SEMANA
-);
-
--- Stress level type (Nível de estresse)
-CREATE TYPE stress_level_type AS ENUM (
-    'LOW',          -- BAIXO
-    'MODERATE',     -- MODERADO
-    'HIGH'          -- ALTO
-);
-
--- Alcohol use type (Uso de álcool)
-CREATE TYPE alcohol_use_type AS ENUM (
-    'DOES_NOT_CONSUME',      -- NAO_CONSOME
-    'SOCIAL_1_2X_WEEK',      -- SOCIAL_1_2X_SEMANA
-    'FREQUENT_3_4X_WEEK',    -- FREQUENTE_3_4X_SEMANA
-    'DAILY_USE'              -- USO_DIARIO
-);
-
--- Hydration level type (Nível de hidratação)
-CREATE TYPE hydration_level_type AS ENUM (
-    'LESS_THAN_1L',          -- MENOS_1L
-    'BETWEEN_1_2L',          -- ENTRE_1_2L
-    'BETWEEN_2_3L',          -- ENTRE_2_3L
-    'MORE_THAN_3L'           -- MAIS_3L
-);
-
--- Tabela principal
-CREATE TABLE user_anamnesis (
-    id SERIAL PRIMARY KEY,
-    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-
-    main_goal main_goal_type NOT NULL,            -- Objetivo principal
-    medical_conditions TEXT,                      -- Condições médicas
-    allergies TEXT,                               -- Alergias
-    surgeries TEXT,                               -- Cirurgias
-
-    activity_type activity_type_enum,             -- Tipo de atividade
-    frequency frequency_type,                     -- Frequência semanal
-    activity_minutes_per_day INT,                 -- Minutos de atividade por dia
-
-    sleep_quality sleep_quality_type,             -- Qualidade do sono
-    wakes_during_night wakes_during_night_type,   -- Acorda durante a noite
-
-    bowel_frequency bowel_frequency_type,         -- Frequência intestinal
-    stress_level stress_level_type,               -- Nível de estresse
-    alcohol_use alcohol_use_type,                 -- Consumo de álcool
-    smoking BOOLEAN DEFAULT FALSE,                -- Fumante
-    hydration_level hydration_level_type,         -- Nível de hidratação
-    continuous_medication BOOLEAN DEFAULT FALSE,  -- Uso de medicação contínua
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-INSERT INTO user_anamnesis (
-    user_id,
-    main_goal,
-    medical_conditions,
-    allergies,
-    surgeries,
-    activity_type,
-    frequency,
-    activity_minutes_per_day,
-    sleep_quality,
-    wakes_during_night,
-    bowel_frequency,
-    stress_level,
-    alcohol_use,
-    smoking,
-    hydration_level,
-    continuous_medication
-) VALUES (
-    2,  -- id do usuário na tabela users
-    'WEIGHT_LOSS',            -- Emagrecimento
-    'Hypertension; Gastritis',-- Condições médicas
-    'Lactose intolerance',    -- Alergias
-    'Cesarean',               -- Cirurgias
-    'WEIGHT_TRAINING',        -- Tipo de atividade
-    '3_4X_WEEK',              -- Frequência semanal
-    60,                       -- Minutos de atividade por dia
-    'REGULAR',                -- Qualidade do sono
-    'ONCE',                   -- Acorda durante a noite
-    'EVERY_DAY',              -- Frequência intestinal
-    'MODERATE',               -- Nível de estresse
-    'SOCIAL_1_2X_WEEK',       -- Consumo de álcool
-    FALSE,                    -- Fumante
-    'BETWEEN_2_3L',           -- Nível de hidratação
-    TRUE                      -- Uso de medicação contínua
-)
-RETURNING *;
-
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
-UPDATE users SET password = crypt(password,gen_salt('bf'));
-
-ALTER TABLE chat_messages
-ADD COLUMN nutritionist_comment TEXT,
-ADD COLUMN nutritionist_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-ADD COLUMN comment_timestamp TIMESTAMP;
-
-INSERT INTO users (
-    name,
-    email,
-    password, -- Lembre-se de usar o encoder no Java!
-    role,
-    gender,
-    birth_date,
-    height,
-    weight,
-    approved, -- Nutricionista já entra aprovado
-    created_at,
-    ai_assistant_enabled -- Nutricionistas geralmente não precisam do assistente para si
-) VALUES (
-    'Nutrix',                     -- Nome do Nutricionista
-    'nutrix@nutrix.com',              -- Email (deve ser único)
-    '1234',                        -- Senha (!!! USAR ENCODER NO JAVA !!!)
-    'NUTRITIONIST',                         -- Papel/Role
-    'MASCULINO',                            -- Gênero (opcional)
-    '1985-05-15',                           -- Data de Nascimento (opcional)
-    178,                                    -- Altura em cm (opcional)
-    78.5,                                   -- Peso em kg (opcional)
-    TRUE,                                   -- Aprovado
-    CURRENT_TIMESTAMP,                      -- Data de criação
-    FALSE                                   -- Assistente AI desabilitado para ele
-);
-
-CREATE TYPE user_feedback_type AS ENUM ('positive', 'negative');
-
-ALTER TABLE chat_messages
-ADD COLUMN user_feedback user_feedback_type;
+-- 5.6 Atualizar Status de Aprovação (Se desejar aprovar todos os usuários existentes)
+-- UPDATE users
+-- SET approved = TRUE;
 
 
+-- =======================================================
+-- 6. COMANDOS DE VERIFICAÇÃO/MANUTENÇÃO
+-- (Manter no final ou comentados)
+-- =======================================================
 
+-- Seleções de Verificação
+SELECT id, name, email, role, approved FROM users;
+SELECT * FROM user_anamnesis;
+-- SELECT * FROM meals; -- Você não tem uma tabela 'meals' definida, talvez fosse 'meal_plans'.
 
+-- DELETE from user_anamnesis where id=3;
+-- DELETE from users where id=29;
