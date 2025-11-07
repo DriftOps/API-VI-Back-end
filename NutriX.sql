@@ -384,3 +384,92 @@ SELECT * FROM user_anamnesis;
 
 -- DELETE from user_anamnesis where id=3;
 -- DELETE from users where id=29;
+
+-- =======================================================
+-- 7. TABELAS DE DIETA DINÂMICA (NOVO)
+-- =======================================================
+
+-- Garante que a tabela de refeições (essencial) exista
+-- (Baseado no seu arquivo Meal.sql e Meal.java)
+CREATE TABLE IF NOT EXISTS meals (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    description TEXT NOT NULL,
+    calories INT,
+    protein NUMERIC(5,2),
+    carbs NUMERIC(5,2),
+    fats NUMERIC(5,2),
+    meal_type VARCHAR(50), -- (e.g., 'breakfast', 'lunch', 'dinner', 'snack')
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Data do registro
+);
+
+-- 7.1 Tipo ENUM para o status da dieta
+CREATE TYPE diet_status AS ENUM (
+    'ACTIVE',     -- Dieta em andamento
+    'COMPLETED',  -- Concluída com sucesso
+    'CANCELLED'   -- Interrompida
+);
+
+-- 7.2 Tabela Principal da Dieta (O "Plano Mestre")
+CREATE TABLE diets (
+    id SERIAL PRIMARY KEY,
+    -- 'UNIQUE' aqui assume uma dieta ativa por vez. 
+    -- Remova 'UNIQUE' se o usuário puder ter múltiplas dietas (ex: uma ativa, várias inativas).
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE, 
+    title VARCHAR(255) NOT NULL,
+    status diet_status NOT NULL DEFAULT 'ACTIVE',
+    
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE NOT NULL,
+    
+    initial_weight NUMERIC(5,2) NOT NULL,
+    target_weight NUMERIC(5,2) NOT NULL,
+    
+    -- Metas BASE (O plano original, calculado na criação)
+    base_daily_calories INT NOT NULL,
+    base_daily_protein_g INT,
+    base_daily_carbs_g INT,
+    base_daily_fats_g INT,
+
+    -- Piso metabólico (TMB) para a IA NUNCA sugerir abaixo
+    safe_metabolic_floor INT NOT NULL, 
+
+    -- Campo para a IA armazenar o racional da última recalibração
+    ai_rationale TEXT, 
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_dates CHECK (end_date > start_date),
+    CONSTRAINT check_positive_targets CHECK (base_daily_calories > 0 AND safe_metabolic_floor > 0)
+);
+
+-- 7.3 Tabela de Metas Diárias (A parte "Ajustável")
+-- Esta é a tabela que a IA irá ler e escrever DIARIAMENTE.
+CREATE TABLE diet_daily_targets (
+    id SERIAL PRIMARY KEY,
+    diet_id INT REFERENCES diets(id) ON DELETE CASCADE,
+    
+    -- O dia específico da meta
+    target_date DATE NOT NULL,
+    
+    -- Metas ajustadas pela IA (começam = base_daily_calories)
+    adjusted_calories INT NOT NULL,
+    adjusted_protein_g INT,
+    adjusted_carbs_g INT,
+    adjusted_fats_g INT,
+    
+    -- O que foi consumido de fato (denormalizado da tabela 'meals' pelo job diário)
+    consumed_calories INT DEFAULT 0,
+    consumed_protein_g NUMERIC(5,2) DEFAULT 0,
+    consumed_carbs_g NUMERIC(5,2) DEFAULT 0,
+    consumed_fats_g NUMERIC(5,2) DEFAULT 0,
+    
+    -- Controle
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    UNIQUE(diet_id, target_date) -- Garante apenas uma meta por dia por dieta
+);
+
+-- 7.4 (Opcional) Ligar planos de refeição (templates) a dietas
+ALTER TABLE meal_plans
+ADD COLUMN diet_id INT REFERENCES diets(id) ON DELETE SET NULL;
