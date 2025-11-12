@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserContextDTO {
+    private Long id;
     private String name;
     private Double weight;
     private Double height;
