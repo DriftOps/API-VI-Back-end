@@ -473,3 +473,5 @@ CREATE TABLE diet_daily_targets (
 -- 7.4 (Opcional) Ligar planos de refeição (templates) a dietas
 ALTER TABLE meal_plans
 ADD COLUMN diet_id INT REFERENCES diets(id) ON DELETE SET NULL;
+
+select * from diets;

@@ -1,10 +1,14 @@
+// src/main/java/com/xertica/controller/DietController.java
 package com.xertica.controller;
 
 import com.xertica.dto.CreateDietRequestDTO;
+import com.xertica.dto.DietDailyTargetDTO; // (NOVO)
 import com.xertica.dto.DietViewDTO;
+import com.xertica.dto.UpdateDailyTargetDTO; // (NOVO)
+import com.xertica.entity.User;
 import com.xertica.service.DietService;
-import com.xertica.security.JwtUtils; // Para pegar o usuário do token
-import org.springframework.http.ResponseEntity;
+import com.xertica.service.UserService;
+import org.springframework.http.ResponseEntity; // (NOVO)
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
@@ -13,32 +17,64 @@ import jakarta.validation.Valid;
 public class DietController {
 
     private final DietService dietService;
-    // private final JwtUtils jwtUtils; // Para pegar o user_id do token
+    private final UserService userService;
 
-    public DietController(DietService dietService) {
+    public DietController(DietService dietService, UserService userService) {
         this.dietService = dietService;
+        this.userService = userService;
     }
 
     @PostMapping
     public ResponseEntity<DietViewDTO> createDiet(@Valid @RequestBody CreateDietRequestDTO request) {
-        // Em um app real, o userId viria do token de autenticação
-        // Long userId = jwtUtils.getUserIdFromToken(token);
-        // request.setUserId(userId); 
-        
         DietViewDTO dto = dietService.createDiet(request);
         return ResponseEntity.ok(dto);
     }
-
-    @GetMapping("/active/{userId}") // Trocado para pegar por ID por enquanto
-    public ResponseEntity<DietViewDTO> getActiveDiet(@PathVariable Long userId) {
-        // Pegar o userId do token de autenticação
-        // Long currentUserId = jwtUtils.getUserIdFromToken(token);
+    
+    @GetMapping("/active")
+    public ResponseEntity<DietViewDTO> getActiveDiet(@RequestHeader("Authorization") String token) {
+        User user = userService.getUserFromToken(token); 
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         
-        DietViewDTO dietDTO = dietService.getActiveDietForUser(userId);
-        return ResponseEntity.ok(dietDTO);
+        // (CORRIGIDO) Agora lida com o Optional
+        return dietService.getActiveDietForUser(user.getId())
+                .map(ResponseEntity::ok) // Se presente, retorna 200 OK com a dieta
+                .orElse(ResponseEntity.notFound().build()); // Se vazio, retorna 404 Not Found
     }
 
-    // TODO: Adicionar endpoints para
-    // PUT /api/diets/daily/{id} (para editar uma meta futura)
-    // POST /api/diets/{id}/cancel (para cancelar uma dieta)
+    // ==========================================================
+    // TODO 1: IMPLEMENTADO
+    // ==========================================================
+    @PutMapping("/daily/{id}")
+    public ResponseEntity<DietDailyTargetDTO> updateDailyTarget(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateDailyTargetDTO dto,
+            @RequestHeader("Authorization") String token) {
+        
+        User user = userService.getUserFromToken(token);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        DietDailyTargetDTO updatedTarget = dietService.updateDailyTarget(id, dto, user.getId());
+        return ResponseEntity.ok(updatedTarget);
+    }
+
+    // ==========================================================
+    // TODO 2: IMPLEMENTADO
+    // ==========================================================
+    @PostMapping("/cancel/{id}")
+    public ResponseEntity<Void> cancelDiet(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
+        
+        User user = userService.getUserFromToken(token);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        dietService.cancelDiet(id, user.getId());
+        return ResponseEntity.ok().build();
+    }
 }

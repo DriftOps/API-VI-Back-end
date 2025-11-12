@@ -4,10 +4,12 @@ import com.xertica.entity.Diet;
 import com.xertica.entity.enums.DietStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.repository.query.Param;
 
-// O arquivo DEVE ter SOMENTE esta interface
 public interface DietRepository extends JpaRepository<Diet, Long> {
     
     Optional<Diet> findByUserIdAndStatus(Long userId, DietStatus status);
