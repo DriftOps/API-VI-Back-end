@@ -7,14 +7,13 @@ import com.xertica.service.UserAnamnesisService;
 import com.xertica.entity.User;
 import com.xertica.entity.UserAnamnesis;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication; // ✅ CORRETO
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -25,24 +24,30 @@ public class UserController {
     private final UserService userService;
     private final UserAnamnesisService anamnesisService;
 
-    // 🔥 ENDPOINT DE TESTE
+    // --------------------------------------------------------------------
+    // 🔥 ENDPOINTS DE TESTE
+    // --------------------------------------------------------------------
+
     @GetMapping("/test-auth")
-    public ResponseEntity<String> testAuth() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return ResponseEntity.ok("Autenticado como: " + authentication.getName() +
-                    " | Roles: " + authentication.getAuthorities());
-        } else {
-            return ResponseEntity.ok("Não autenticado");
+    public ResponseEntity<String> testAuth(Authentication auth) {
+        if (auth != null && auth.isAuthenticated()) {
+            return ResponseEntity.ok(
+                    "Autenticado como: " + auth.getName() +
+                    " | Roles: " + auth.getAuthorities()
+            );
         }
+        return ResponseEntity.ok("Não autenticado");
     }
 
-    // 🔥 ENDPOINT DE TESTE ADMIN
     @GetMapping("/test-admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> testAdmin() {
         return ResponseEntity.ok("Acesso ADMIN permitido!");
     }
+
+    // --------------------------------------------------------------------
+    // 🔥 ADMIN: Aprovar Usuário
+    // --------------------------------------------------------------------
 
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
@@ -51,88 +56,89 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    // --------------------------------------------------------------------
+    // 🔥 CRUD USER
+    // --------------------------------------------------------------------
+
     @GetMapping
     public ResponseEntity<List<UserViewDTO>> getAllUsers() {
-        List<UserViewDTO> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PostMapping("/signup")
     public ResponseEntity<UserViewDTO> signup(@RequestBody UserDTO dto) {
-        System.out.println("Recebendo requisição de signup para: " + dto.getEmail());
-        UserViewDTO response = userService.signup(dto);
-        System.out.println("Signup concluído para: " + dto.getEmail());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userService.signup(dto));
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody UserLoginDTO dto) {
-        System.out.println("Recebendo requisição de login para: " + dto.getEmail());
-        LoginResponseDTO response = userService.login(dto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userService.login(dto));
     }
 
-    // Criar usuário como ADMIN (já aprovado)
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserViewDTO> createUser(@RequestBody UserDTO dto) {
-        System.out.println("Admin criando usuário: " + dto.getEmail());
-        UserViewDTO response = userService.createUserAsAdmin(dto);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userService.createUserAsAdmin(dto));
     }
 
-    // Buscar usuário atual
+    // --------------------------------------------------------------------
+    // 🔥 PERFIL DO USUÁRIO
+    // --------------------------------------------------------------------
+
     @GetMapping("/me")
     public ResponseEntity<UserProfileDTO> getCurrentUser(Authentication authentication) {
-        String email = authentication.getName();
-        UserProfileDTO user = userService.getUserProfileByEmail(email);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.getUserProfileByEmail(authentication.getName()));
     }
 
-    // Buscar usuário por ID (apenas ADMIN ou o próprio usuário)
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @userService.isSameUser(#id, authentication.name)")
     public ResponseEntity<UserProfileDTO> getUserById(@PathVariable Long id) {
-        UserProfileDTO user = userService.getUserProfile(id);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userService.getUserProfile(id));
     }
 
-    // Atualizar perfil do usuário
+    // --------------------------------------------------------------------
+    // 🔥 ATUALIZAR PERFIL (incluindo endereço / CEP)
+    // --------------------------------------------------------------------
+
     @PutMapping("/profile")
-    public ResponseEntity<UserProfileDTO> updateProfile(@RequestBody UserUpdateDTO dto, Authentication authentication) {
-        String email = authentication.getName();
-        UserProfileDTO updatedUser = userService.updateUserProfile(email, dto);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<UserProfileDTO> updateProfile(
+            @RequestBody UserUpdateDTO dto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(userService.updateUserProfile(authentication.getName(), dto));
     }
+
+    // --------------------------------------------------------------------
+    // 🔥 CONTEXTO PARA A IA
+    // --------------------------------------------------------------------
 
     @GetMapping("/context")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AIContextDTO> getCurrentUserContext(Authentication authentication) {
-        String email = authentication.getName();
-        AIContextDTO context = userService.getUserContextForAI(email);
-        return ResponseEntity.ok(context);
+        return ResponseEntity.ok(userService.getUserContextForAI(authentication.getName()));
     }
+
+    // --------------------------------------------------------------------
+    // 🔥 PESAGEM DO USUÁRIO
+    // --------------------------------------------------------------------
 
     @PostMapping("/me/weight")
-@PreAuthorize("isAuthenticated()")
-public ResponseEntity<Void> addWeightLog(
-        Authentication authentication, 
-        @RequestBody NewWeightLogDTO dto) {
-            
-    if (dto.weight() == null || dto.weight() <= 0) {
-        return ResponseEntity.badRequest().build();
-    }
-    
-    String email = authentication.getName();
-    userService.addWeightLog(email, dto.weight());
-    return ResponseEntity.ok().build();
-}
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> addWeightLog(
+            Authentication authentication,
+            @RequestBody NewWeightLogDTO dto
+    ) {
+        if (dto.weight() == null || dto.weight() <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
 
-@GetMapping("/me/weight-history")
-@PreAuthorize("isAuthenticated()")
-public ResponseEntity<List<WeightLogDTO>> getWeightHistory(Authentication authentication) {
-    String email = authentication.getName();
-    List<WeightLogDTO> history = userService.getWeightHistory(email);
-    return ResponseEntity.ok(history);
-}
+        userService.addWeightLog(authentication.getName(), dto.weight());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me/weight-history")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<WeightLogDTO>> getWeightHistory(Authentication authentication) {
+        return ResponseEntity.ok(userService.getWeightHistory(authentication.getName()));
+    }
 }

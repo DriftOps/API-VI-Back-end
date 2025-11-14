@@ -287,7 +287,7 @@ INSERT INTO users (
     }'::jsonb,
     FALSE -- Cliente começa como FALSE
 ) RETURNING id;
-
+approved
 -- Usuário 2: ADMIN
 INSERT INTO users (
     name, email, password, role, height, weight, birth_date, approved
