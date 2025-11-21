@@ -13,9 +13,21 @@ public interface DietDailyTargetRepository extends JpaRepository<DietDailyTarget
 
     Optional<DietDailyTarget> findByDietIdAndTargetDate(Long dietId, LocalDate targetDate);
 
-    // Ordenado por data, essencial para a IA
     List<DietDailyTarget> findByDietIdAndTargetDateBetweenOrderByTargetDateAsc(Long dietId, LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT COALESCE(SUM(m.calories), 0) FROM Meal m WHERE m.user.id = :userId AND DATE(m.createdAt) = :date")
+    // Soma calorias do dia
+    @Query("SELECT COALESCE(SUM(m.calories), 0) FROM Meal m WHERE m.user.id = :userId AND m.mealDate = :date")
     Integer sumCaloriesByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
+    // Soma Proteínas
+    @Query("SELECT COALESCE(SUM(m.protein), 0) FROM Meal m WHERE m.user.id = :userId AND m.mealDate = :date")
+    Double sumProteinByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
+    // Soma Carbos
+    @Query("SELECT COALESCE(SUM(m.carbs), 0) FROM Meal m WHERE m.user.id = :userId AND m.mealDate = :date")
+    Double sumCarbsByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
+    // Soma Gorduras
+    @Query("SELECT COALESCE(SUM(m.fat), 0) FROM Meal m WHERE m.user.id = :userId AND m.mealDate = :date")
+    Double sumFatByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 }

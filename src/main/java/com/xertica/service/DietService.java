@@ -43,7 +43,6 @@ public class DietService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // (Opcional) Cancela qualquer dieta ativa antiga
         dietRepository.findByUserIdAndStatus(user.getId(), DietStatus.ACTIVE)
             .ifPresent(oldDiet -> oldDiet.setStatus(DietStatus.CANCELLED));
 
@@ -61,25 +60,38 @@ public class DietService {
 
         diet.setTargetWeight(request.getTargetWeight());
         diet.setBaseDailyCalories(request.getBaseDailyCalories());
-        diet.setSafeMetabolicFloor(request.getSafeMetabolicFloor()); // Essencial para a IA
+        
+        // --- NOVO: Setando Macros e Racional ---
+        diet.setBaseDailyProteinG(request.getBaseDailyProteinG());
+        diet.setBaseDailyCarbsG(request.getBaseDailyCarbsG());
+        diet.setBaseDailyFatsG(request.getBaseDailyFatsG());
+        diet.setAiRationale(request.getAiRationale()); // Salva o texto da IA
+        // ---------------------------------------
+
+        diet.setSafeMetabolicFloor(request.getSafeMetabolicFloor());
         diet.setStatus(DietStatus.ACTIVE);
 
         Diet savedDiet = dietRepository.save(diet);
 
-        // 2. Criar TODAS as entradas de metas diárias (back-fill)
         List<DietDailyTarget> dailyTargets = new ArrayList<>();
         for (LocalDate date = diet.getStartDate(); !date.isAfter(diet.getEndDate()); date = date.plusDays(1)) {
             DietDailyTarget dailyTarget = new DietDailyTarget();
             dailyTarget.setDiet(savedDiet);
             dailyTarget.setTargetDate(date);
-            dailyTarget.setAdjustedCalories(request.getBaseDailyCalories()); // Começa com a meta base
-            // (definir macros base também)
+            dailyTarget.setAdjustedCalories(request.getBaseDailyCalories());
+            
+            dailyTarget.setAdjustedProteinG(request.getBaseDailyProteinG());
+            dailyTarget.setAdjustedCarbsG(request.getBaseDailyCarbsG());
+            dailyTarget.setAdjustedFatsG(request.getBaseDailyFatsG());
+            // ------------------------------------------
+            
             dailyTargets.add(dailyTarget);
         }
         
         dietDailyTargetRepository.saveAll(dailyTargets);
         
-        return getActiveDietForUser(user.getId()); // Retorna o DTO completo
+
+        return getActiveDietForUser(user.getId()); 
     }
 
     @Transactional(readOnly = true)

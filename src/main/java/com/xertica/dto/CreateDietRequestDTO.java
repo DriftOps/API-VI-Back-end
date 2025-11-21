@@ -9,7 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data // Garante Getters, Setters e Construtores
+@Data
 public class CreateDietRequestDTO {
 
     @NotNull(message = "O ID do usuário é obrigatório")
@@ -20,7 +20,7 @@ public class CreateDietRequestDTO {
 
     @NotNull(message = "A data final é obrigatória")
     @Future(message = "A data final deve ser no futuro")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") // <--- OBRIGATÓRIO PARA FUNCIONAR COM O PYTHON
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     @NotNull(message = "O peso alvo é obrigatório")
@@ -29,6 +29,12 @@ public class CreateDietRequestDTO {
 
     @NotNull(message = "A meta de calorias é obrigatória")
     private Integer baseDailyCalories;
+
+    private Integer baseDailyProteinG;
+    private Integer baseDailyCarbsG;
+    private Integer baseDailyFatsG;
+
+    private String aiRationale;
 
     @NotNull(message = "O piso metabólico é obrigatório")
     private Integer safeMetabolicFloor;

@@ -15,7 +15,14 @@ public class DietViewDTO {
     private LocalDate endDate;
     private BigDecimal initialWeight;
     private BigDecimal targetWeight;
+    
     private Integer baseDailyCalories;
+    
+    private Integer baseDailyProteinG;
+    private Integer baseDailyCarbsG;
+    private Integer baseDailyFatsG;
+    private Integer safeMetabolicFloor;
+
     private String aiRationale;
     private List<DietDailyTargetDTO> dailyTargets;
 }

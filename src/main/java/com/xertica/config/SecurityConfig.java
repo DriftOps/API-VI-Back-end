@@ -59,6 +59,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configure(http))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/users/login", "/api/users/signup", "/api/anamnesis/**").permitAll()
                 .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
