@@ -1,34 +1,35 @@
 package com.xertica.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data // Garante Getters, Setters e Construtores
 public class CreateDietRequestDTO {
-    @NotNull
-    private Long userId; // Em prod, pegar do token, mas para chat pode vir do admin
 
-    @NotEmpty
+    @NotNull(message = "O ID do usuário é obrigatório")
+    private Long userId;
+
+    @NotNull(message = "O título é obrigatório")
     private String title;
 
-    @NotNull
+    @NotNull(message = "A data final é obrigatória")
     @Future(message = "A data final deve ser no futuro")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") // <--- OBRIGATÓRIO PARA FUNCIONAR COM O PYTHON
     private LocalDate endDate;
 
-    @NotNull
-    @Positive(message = "Peso alvo deve ser positivo")
+    @NotNull(message = "O peso alvo é obrigatório")
+    @Min(value = 0, message = "O peso deve ser positivo")
     private BigDecimal targetWeight;
 
-    // A IA deve pré-calcular isso antes de chamar o create
-    @NotNull
-    @Positive
+    @NotNull(message = "A meta de calorias é obrigatória")
     private Integer baseDailyCalories;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "O piso metabólico é obrigatório")
     private Integer safeMetabolicFloor;
 }

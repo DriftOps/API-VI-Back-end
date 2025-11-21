@@ -20,14 +20,16 @@ public class DietController {
     }
 
     @PostMapping
-    public ResponseEntity<DietViewDTO> createDiet(@Valid @RequestBody CreateDietRequestDTO request) {
-        // Em um app real, o userId viria do token de autenticação
-        // Long userId = jwtUtils.getUserIdFromToken(token);
-        // request.setUserId(userId); 
-        
-        DietViewDTO dto = dietService.createDiet(request);
-        return ResponseEntity.ok(dto);
-    }
+    public ResponseEntity<?> createDiet(@Valid @RequestBody CreateDietRequestDTO request) {
+        try {
+            DietViewDTO dto = dietService.createDiet(request);
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            e.printStackTrace(); // Imprime o erro real no console
+            return ResponseEntity.badRequest().body("Erro ao criar dieta: " + e.getMessage());
+        }
+    } 
+
 
     @GetMapping("/active/{userId}") // Trocado para pegar por ID por enquanto
     public ResponseEntity<DietViewDTO> getActiveDiet(@PathVariable Long userId) {

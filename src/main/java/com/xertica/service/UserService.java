@@ -249,6 +249,7 @@ public AIContextDTO getUserContextForAI(String email) {
 
     // Mapeia os dados do usuário para o DTO - FORMA CORRIGIDA
     UserContextDTO userDTO = new UserContextDTO();
+    userDTO.setId(user.getId());
     userDTO.setName(user.getName());
     userDTO.setWeight(user.getWeight());
     
