@@ -31,6 +31,9 @@ public class ChatMessage {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
+    @Column(name = "image_data", columnDefinition = "LONGTEXT") 
+    private String image;
+
     @Builder.Default
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

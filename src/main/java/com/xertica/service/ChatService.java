@@ -56,12 +56,13 @@ public class ChatService {
                 .session(session)
                 .sender("user")
                 .message(request.getMessage())
+                .image(request.getImage())
                 .timestamp(LocalDateTime.now())
                 .build();
         messageRepository.save(userMessage);
 
         // 2. Chama a AI (Python Backend)
-        String aiResponse = callPythonAI(request.getMessage(), userToken);
+        String aiResponse = callPythonAI(request.getMessage(), userToken, request.getImage());
 
         // 3. Salva a resposta da AI
         ChatMessage aiMessage = ChatMessage.builder()
@@ -75,17 +76,24 @@ public class ChatService {
         return toDTO(savedAiMessage); // Retorna a resposta da AI
     }
     
-    private String callPythonAI(String message, String userToken) {
-        String aiUrl = "http://localhost:8001/responder"; // URL do seu agente Python
+    private String callPythonAI(String message, String userToken, String imageBase64) { // Adicione imageBase64 aos parâmetros
+        String aiUrl = "http://localhost:8001/responder";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         if (userToken != null && !userToken.isEmpty()) {
-             headers.set("Authorization", userToken); // Passa o token do usuário
+             headers.set("Authorization", userToken);
         }
        
-        Map<String, String> body = Map.of("pergunta", message);
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
+        // Cria um Map mutável ou use HashMap para poder adicionar chaves condicionalmente
+        java.util.Map<String, Object> body = new java.util.HashMap<>();
+        body.put("pergunta", message);
+        
+        if (imageBase64 != null && !imageBase64.isEmpty()) {
+            body.put("image", imageBase64); // Envia a imagem para o Python
+        }
+
+        HttpEntity<java.util.Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
             // A resposta do Python é {"resposta": "...", "meal_saved": true/false}
@@ -119,6 +127,7 @@ public class ChatService {
         dto.setUserId(entity.getSession().getUser().getId()); // Útil para o admin
         dto.setSender(entity.getSender());
         dto.setMessage(entity.getMessage());
+        dto.setImage(entity.getImage());
         dto.setTimestamp(entity.getTimestamp());
         dto.setNutritionistComment(entity.getNutritionistComment());
         dto.setUserFeedback(entity.getUserFeedback());

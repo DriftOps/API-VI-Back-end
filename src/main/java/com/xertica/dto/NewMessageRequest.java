@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NewMessageRequest {
     private String message;
+    private String image;
 }

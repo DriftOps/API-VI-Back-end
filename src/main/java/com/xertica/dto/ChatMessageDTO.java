@@ -16,6 +16,7 @@ public class ChatMessageDTO {
     private Long userId; 
     private String sender; 
     private String message;
+    private String image;
     private LocalDateTime timestamp; 
     private String nutritionistComment; 
 
