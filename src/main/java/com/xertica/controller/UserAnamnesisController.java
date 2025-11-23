@@ -38,4 +38,16 @@ public class UserAnamnesisController {
         anamnesisService.delete(userId);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{userId}/partial")
+    public ResponseEntity<Void> updatePartial(
+            @PathVariable Long userId, 
+            @RequestBody java.util.Map<String, String> payload) {
+        
+        String field = payload.get("field");
+        String value = payload.get("value");
+        
+        anamnesisService.updatePartial(userId, field, value);
+        return ResponseEntity.ok().build();
+    }
 }
