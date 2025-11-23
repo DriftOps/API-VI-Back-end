@@ -3,20 +3,21 @@ package com.xertica.service;
 import com.xertica.entity.Diet;
 import com.xertica.entity.DietDailyTarget;
 import com.xertica.entity.enums.DietStatus;
-import com.xertica.repository.DietRepository;
 import com.xertica.repository.DietDailyTargetRepository;
+import com.xertica.repository.DietRepository;
 import com.xertica.repository.MealRepository;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.scheduling.annotation.Async;
 
 @Service
 public class DietBalanceJob {
@@ -42,8 +43,8 @@ public class DietBalanceJob {
     private final MealRepository mealRepository;
     private final RestTemplate restTemplate;
 
-    @Value("${ai.service.url}") // Defina isso no seu application.properties
-    private String AI_SERVICE_URL; // ex: http://localhost:5000/ai/balance-diet
+    @Value("${ai.service.url}")
+    private String AI_SERVICE_URL;
 
     public DietBalanceJob(DietRepository dietRepository, DietDailyTargetRepository ddtRepository, MealRepository mealRepository) {
         this.dietRepository = dietRepository;
@@ -52,28 +53,23 @@ public class DietBalanceJob {
         this.restTemplate = new RestTemplate();
     }
 
-    // Roda todo dia às 02:00 da manhã
-    @Scheduled(cron = "0 0 2 * * *")
+    /**
+     * Método acionado sob demanda (Trigger) quando o usuário excede a meta.
+     * Não roda mais via @Scheduled.
+     */
     @Transactional
-    public void runDailyBalance() {
-        List<Diet> activeDiets = dietRepository.findAllByStatus(DietStatus.ACTIVE);
+    @Async 
+    public void balanceDietForUser(Long userId) {
+        Optional<Diet> dietOpt = dietRepository.findByUserIdAndStatus(userId, DietStatus.ACTIVE);
+        
+        if (dietOpt.isPresent()) {
+            Diet diet = dietOpt.get();
+            LocalDate today = LocalDate.now();
 
-        for (Diet diet : activeDiets) {
-            LocalDate yesterday = LocalDate.now().minusDays(1);
-
-            // 1. Atualizar o consumo de "ontem"
-            Integer consumedYesterday = mealRepository.sumCaloriesByUserIdAndDate(diet.getUser().getId(), yesterday);
-            DietDailyTarget yesterdayTarget = ddtRepository.findByDietIdAndTargetDate(diet.getId(), yesterday)
-                .orElse(null);
-            
-            if (yesterdayTarget != null) {
-                yesterdayTarget.setConsumedCalories(consumedYesterday != null ? consumedYesterday : 0);
-                ddtRepository.save(yesterdayTarget);
-            }
-
-            // 2. Preparar dados para a IA (últimos 7 dias)
-            LocalDate startDate = yesterday.minusDays(6);
-            List<DietDailyTarget> recentTargets = ddtRepository.findByDietIdAndTargetDateBetweenOrderByTargetDateAsc(diet.getId(), startDate, yesterday);
+            // 1. Preparar dados para a IA 
+            // Buscamos os últimos 6 dias + HOJE (pois o estouro é hoje)
+            LocalDate startDate = today.minusDays(6);
+            List<DietDailyTarget> recentTargets = ddtRepository.findByDietIdAndTargetDateBetweenOrderByTargetDateAsc(diet.getId(), startDate, today);
             
             AiBalanceRequest request = new AiBalanceRequest();
             request.base_calories = diet.getBaseDailyCalories();
@@ -86,30 +82,47 @@ public class DietBalanceJob {
                     return dd;
                 }).collect(Collectors.toList());
 
-            // 3. Chamar a IA
+            // 2. Chamar a IA
             try {
+                System.out.println("Chamando IA para rebalancear dieta do usuário " + userId + "...");
                 AiBalanceResponse response = restTemplate.postForObject(AI_SERVICE_URL, request, AiBalanceResponse.class);
 
-                // 4. Aplicar a nova meta da IA
                 if (response != null && response.new_adjusted_calories > 0) {
-                    applyNewTargetToFuture(diet, response.new_adjusted_calories);
-                    diet.setAiRationale(response.ai_rationale);
+                    
+                    // --- TRAVA DE SEGURANÇA METABÓLICA (HARD CLAMP) ---
+                    // A IA sugere, mas o Java dita as regras finais.
+                    // Se a IA sugerir 1000, mas o piso for 1400, usamos 1400.
+                    int finalCalories = Math.max(response.new_adjusted_calories, diet.getSafeMetabolicFloor());
+                    
+                    // Log de auditoria interna se a IA violou o piso
+                    if (finalCalories > response.new_adjusted_calories) {
+                         System.out.println("SAFETY TRIGGER: IA tentou cruzar o piso metabólico. Ajustado para o limite seguro: " + finalCalories);
+                    }
+
+                    applyNewTargetToFuture(diet, finalCalories);
+                    
+                    // Adiciona nota automática ao racional se houver ajuste de segurança
+                    String rationale = response.ai_rationale;
+                    if (finalCalories != response.new_adjusted_calories) {
+                        rationale += " [Nota do Sistema: O valor foi ajustado para respeitar seu metabolismo basal de segurança.]";
+                    }
+                    
+                    diet.setAiRationale(rationale);
                     dietRepository.save(diet);
                 }
             } catch (Exception e) {
-                // Logar erro, mas não parar o job
-                System.err.println("Erro ao rebalancear dieta " + diet.getId() + ": " + e.getMessage());
+                System.err.println("Erro na comunicação com IA: " + e.getMessage());
             }
         }
     }
 
     private void applyNewTargetToFuture(Diet diet, int newCalories) {
-        LocalDate today = LocalDate.now();
-        LocalDate endDate = today.plusDays(6); // Ajusta a próxima semana (7 dias)
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate endDate = tomorrow.plusDays(6); // Ajusta a próxima semana (7 dias a partir de amanhã)
 
         List<DietDailyTarget> futureTargets = ddtRepository.findByDietIdAndTargetDateBetweenOrderByTargetDateAsc(
             diet.getId(), 
-            today, 
+            tomorrow, 
             endDate.isAfter(diet.getEndDate()) ? diet.getEndDate() : endDate
         );
 
