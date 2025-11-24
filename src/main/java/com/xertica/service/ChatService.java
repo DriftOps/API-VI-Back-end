@@ -177,7 +177,7 @@ public class ChatService {
         if ("positive".equals(feedback) || "negative".equals(feedback)) {
             message.setUserFeedback(feedback);
         } else {
-            message.setUserFeedback(null); // Permite remover o feedback
+            message.setUserFeedback(null);
         }
 
         messageRepository.save(message);

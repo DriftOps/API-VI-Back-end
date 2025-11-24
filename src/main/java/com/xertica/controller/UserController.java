@@ -4,17 +4,13 @@ import com.xertica.dto.*;
 import com.xertica.dto.context.AIContextDTO;
 import com.xertica.service.UserService;
 import com.xertica.service.UserAnamnesisService;
-import com.xertica.entity.User;
-import com.xertica.entity.UserAnamnesis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication; // ✅ CORRETO
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 
 @RestController
