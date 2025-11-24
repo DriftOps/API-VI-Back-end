@@ -1,6 +1,7 @@
 package com.xertica.service;
 
 import com.xertica.dto.CreateDietRequestDTO;
+import com.xertica.dto.DietDailyTargetDTO;
 import com.xertica.dto.DietViewDTO;
 import com.xertica.entity.Diet;
 import com.xertica.entity.DietDailyTarget;
@@ -25,8 +26,6 @@ public class DietService {
     private final DietDailyTargetRepository dietDailyTargetRepository;
     private final UserRepository userRepository;
     private final DietMapper dietMapper;
-    // Assumindo que você tem um serviço que calcula a TMB (Piso Seguro)
-    // private final UserAnamnesisService userAnamnesisService; 
 
     public DietService(DietRepository dietRepository, 
                          DietDailyTargetRepository ddtRepository, 
@@ -43,9 +42,13 @@ public class DietService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        dietRepository.findByUserIdAndStatus(user.getId(), DietStatus.ACTIVE)
-            .ifPresent(oldDiet -> oldDiet.setStatus(DietStatus.CANCELLED));
-
+                List<Diet> activeDiets = dietRepository.findAllByUserIdAndStatus(user.getId(), DietStatus.ACTIVE);
+                if (!activeDiets.isEmpty()) {
+                    for (Diet oldDiet : activeDiets) {
+                        oldDiet.setStatus(DietStatus.CANCELLED);
+                    }
+                    dietRepository.saveAll(activeDiets);
+                }
         Diet diet = new Diet();
         diet.setUser(user);
         diet.setTitle(request.getTitle());
@@ -61,12 +64,10 @@ public class DietService {
         diet.setTargetWeight(request.getTargetWeight());
         diet.setBaseDailyCalories(request.getBaseDailyCalories());
         
-        // --- NOVO: Setando Macros e Racional ---
         diet.setBaseDailyProteinG(request.getBaseDailyProteinG());
         diet.setBaseDailyCarbsG(request.getBaseDailyCarbsG());
         diet.setBaseDailyFatsG(request.getBaseDailyFatsG());
-        diet.setAiRationale(request.getAiRationale()); // Salva o texto da IA
-        // ---------------------------------------
+        diet.setAiRationale(request.getAiRationale()); 
 
         diet.setSafeMetabolicFloor(request.getSafeMetabolicFloor());
         diet.setStatus(DietStatus.ACTIVE);
@@ -83,13 +84,11 @@ public class DietService {
             dailyTarget.setAdjustedProteinG(request.getBaseDailyProteinG());
             dailyTarget.setAdjustedCarbsG(request.getBaseDailyCarbsG());
             dailyTarget.setAdjustedFatsG(request.getBaseDailyFatsG());
-            // ------------------------------------------
             
             dailyTargets.add(dailyTarget);
         }
         
         dietDailyTargetRepository.saveAll(dailyTargets);
-        
 
         return getActiveDietForUser(user.getId()); 
     }
@@ -100,5 +99,25 @@ public class DietService {
                 .orElseThrow(() -> new RuntimeException("Nenhuma dieta ativa encontrada"));
         
         return dietMapper.dietToDietViewDTO(diet);
+    }
+
+    // --- NOVOS MÉTODOS ---
+
+    @Transactional
+    public void cancelDiet(Long dietId) {
+        Diet diet = dietRepository.findById(dietId)
+            .orElseThrow(() -> new RuntimeException("Dieta não encontrada"));
+        
+        diet.setStatus(DietStatus.CANCELLED);
+        dietRepository.save(diet);
+    }
+
+    @Transactional
+    public DietDailyTarget updateDailyTarget(Long targetId, int newCalories) {
+        DietDailyTarget target = dietDailyTargetRepository.findById(targetId)
+            .orElseThrow(() -> new RuntimeException("Meta diária não encontrada"));
+        
+        target.setAdjustedCalories(newCalories);
+        return dietDailyTargetRepository.save(target);
     }
 }

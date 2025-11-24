@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-// O arquivo DEVE ter SOMENTE esta interface
 public interface DietRepository extends JpaRepository<Diet, Long> {
     
+    List<Diet> findAllByUserIdAndStatus(Long userId, DietStatus status);
+
     Optional<Diet> findByUserIdAndStatus(Long userId, DietStatus status);
 
     @Query("SELECT d FROM Diet d LEFT JOIN FETCH d.dailyTargets dt WHERE d.user.id = :userId AND d.status = :status ORDER BY dt.targetDate ASC")
