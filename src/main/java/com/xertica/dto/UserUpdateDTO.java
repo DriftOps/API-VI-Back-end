@@ -4,6 +4,7 @@ import com.xertica.entity.enums.anamnesis.*; // Importar todos os enums
 import lombok.Data;
 import java.util.List;
 
+
 @Data
 public class UserUpdateDTO {
     // --- Campos User ---
@@ -29,5 +30,6 @@ public class UserUpdateDTO {
     private Boolean smoking;
     private HydrationLevelType hydrationLevel;
     private Boolean continuousMedication;
+    private AddressDTO address;
     
 }

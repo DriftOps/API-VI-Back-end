@@ -5,6 +5,7 @@ import com.xertica.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Type;
+import com.xertica.dto.AddressDTO; // ✅ Importe o DTO
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,4 +63,8 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserAnamnesis anamnesis;
 
+    
+    @Type(JsonBinaryType.class)
+    @Column(columnDefinition = "jsonb")
+    private AddressDTO address; 
 }

@@ -53,6 +53,12 @@ public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
         user.setPlan(dto.getPlan());
     }
 
+    if (dto.getAddress() != null) {
+        // Se o usuário já tem endereço, atualizamos os campos. Se não, criamos novo.
+        // Como é um objeto JSONB substituído por inteiro, podemos apenas setar:
+        user.setAddress(dto.getAddress());
+    }
+
     // 2. Atualiza dados da Anamnesis
     UserAnamnesis anamnesis = userAnamnesisRepository.findByUserId(user.getId())
             .orElse(new UserAnamnesis());
@@ -230,7 +236,8 @@ public UserProfileDTO updateUserProfile(String email, UserUpdateDTO dto) {
                 user.getName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getApproved()
+                user.getApproved(),
+                user.getAddress()
         );
     }
 

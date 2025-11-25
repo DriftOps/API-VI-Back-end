@@ -4,6 +4,7 @@ import com.xertica.entity.enums.UserRole;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * DTO simplificado para o processo de signup e criação de usuário.
@@ -22,4 +23,5 @@ public class UserDTO {
     private Double weight;
     private LocalDate birthDate;
     private String gender;
+    private Map<String, Object> address;
 }
