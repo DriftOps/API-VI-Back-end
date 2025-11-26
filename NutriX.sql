@@ -391,6 +391,7 @@ SELECT * FROM user_anamnesis;
 
 -- Garante que a tabela de refeições (essencial) exista
 -- (Baseado no seu arquivo Meal.sql e Meal.java)
+select * from meals;
 CREATE TABLE IF NOT EXISTS meals (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,

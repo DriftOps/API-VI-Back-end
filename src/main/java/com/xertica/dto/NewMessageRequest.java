@@ -7,7 +7,4 @@ import lombok.NoArgsConstructor;
 public class NewMessageRequest {
     private String message;
     private String image;
-    // Novos campos
-    private Double latitude;
-    private Double longitude;
 }
