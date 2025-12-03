@@ -108,16 +108,22 @@ public class DietService {
         Diet diet = dietRepository.findById(dietId)
             .orElseThrow(() -> new RuntimeException("Dieta não encontrada"));
         
-        diet.setStatus(DietStatus.CANCELLED);
-        dietRepository.save(diet);
+        dietRepository.delete(diet);
     }
 
     @Transactional
-    public DietDailyTarget updateDailyTarget(Long targetId, int newCalories) {
+    public DietDailyTarget updateDailyTarget(Long targetId, Integer newCalories, String suggestedMenu) {
         DietDailyTarget target = dietDailyTargetRepository.findById(targetId)
             .orElseThrow(() -> new RuntimeException("Meta diária não encontrada"));
         
-        target.setAdjustedCalories(newCalories);
+        if (newCalories != null) {
+            target.setAdjustedCalories(newCalories);
+        }
+        
+        if (suggestedMenu != null) {
+            target.setSuggestedMenu(suggestedMenu);
+        }
+        
         return dietDailyTargetRepository.save(target);
     }
 }

@@ -18,4 +18,6 @@ public class DietDailyTargetDTO {
     private BigDecimal consumedProteinG;
     private BigDecimal consumedCarbsG;
     private BigDecimal consumedFatsG;
+    private String suggestedMenu;
+    
 }

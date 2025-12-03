@@ -14,6 +14,6 @@ public interface MealRepository extends JpaRepository<Meal, Long> {
 
     List<Meal> findByUserAndMealDate(User user, LocalDate mealDate);
 
-    @Query("SELECT COALESCE(SUM(m.calories), 0) FROM Meal m WHERE m.user.id = :userId AND DATE(m.createdAt) = :date")
+    @Query("SELECT COALESCE(SUM(m.calories), 0) FROM Meal m WHERE m.user.id = :userId AND m.mealDate = :date")
     Integer sumCaloriesByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 }

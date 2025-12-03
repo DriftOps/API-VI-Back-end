@@ -38,4 +38,7 @@ public class DietDailyTarget {
     private BigDecimal consumedFatsG = BigDecimal.ZERO;
 
     private LocalDateTime lastUpdated = LocalDateTime.now();
+
+    @Column(columnDefinition = "TEXT")
+    private String suggestedMenu;
 }

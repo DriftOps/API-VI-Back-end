@@ -48,9 +48,9 @@ public class MealService {
             meal.setCreatedAt(LocalDateTime.now());
         }
 
-        Meal savedMeal = mealRepository.save(meal);
+        Meal savedMeal = mealRepository.saveAndFlush(meal); 
 
-        //  2. CHAMA A ATUALIZAÇÃO
+        // Agora a query dentro deste método verá o novo valor
         updateDietTotals(user.getId(), savedMeal.getMealDate());
 
         return savedMeal;
@@ -64,7 +64,7 @@ public class MealService {
         
         LocalDate mealDate = meal.getMealDate();
         mealRepository.delete(meal);
-
+        mealRepository.flush();
         updateDietTotals(user.getId(), mealDate);
     }
 

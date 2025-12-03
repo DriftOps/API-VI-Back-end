@@ -52,22 +52,30 @@ public class DietController {
         }
     }
 
-    // Endpoint para editar meta futura (match com TODO: /api/diets/daily/{id})
     @PutMapping("/daily/{targetId}")
-    public ResponseEntity<?> updateDailyTarget(@PathVariable Long targetId, @RequestBody Map<String, Integer> payload) {
-        try {
-            Integer newCalories = payload.get("newCalories");
-            // Fallback se o frontend mandar "adjustedCalories" ou outro nome
-            if (newCalories == null) newCalories = payload.get("adjustedCalories");
-            
-            if (newCalories == null) {
-                return ResponseEntity.badRequest().body("Campo 'newCalories' é obrigatório");
-            }
+public ResponseEntity<?> updateDailyTarget(@PathVariable Long targetId, @RequestBody Map<String, Object> payload) { // Mudei para Object
+    try {
+        // Extrai calorias (seguro contra nulos)
+        Integer newCalories = null;
+        if (payload.get("newCalories") != null) {
+            newCalories = Integer.parseInt(payload.get("newCalories").toString());
+        } else if (payload.get("adjustedCalories") != null) {
+            newCalories = Integer.parseInt(payload.get("adjustedCalories").toString());
+        }
 
-            var updatedTarget = dietService.updateDailyTarget(targetId, newCalories);
-            return ResponseEntity.ok(updatedTarget);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao atualizar meta: " + e.getMessage());
+        // Extrai menu sugerido
+        String suggestedMenu = (String) payload.get("suggestedMenu");
+        
+        // Validação: Pelo menos um deve ser enviado
+        if (newCalories == null && suggestedMenu == null) {
+            return ResponseEntity.badRequest().body("Deve enviar 'newCalories' ou 'suggestedMenu'");
+        }
+
+        // Chama o serviço atualizado
+        var updatedTarget = dietService.updateDailyTarget(targetId, newCalories, suggestedMenu);
+        return ResponseEntity.ok(updatedTarget);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body("Erro ao atualizar meta: " + e.getMessage());
         }
     }
 }
